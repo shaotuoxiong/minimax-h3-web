@@ -105,6 +105,7 @@ if (backendAddress) {
         if (!node) continue
         setNodePosition(node, [geometry.pos[0], geometry.pos[1]])
         setNodeSize(node, [geometry.size[0], geometry.size[1]])
+        node.updateArea()
       }
     }
     useLitegraphService().fitView()
