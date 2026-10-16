@@ -55,7 +55,38 @@ window.dispatchEvent(
 await import('./bootstrap')
 
 if (backendAddress) {
-  const viewKey = 'h3-original-canvas-view-v2'
+  const viewKey = 'h3-original-canvas-view-v3'
+  async function openWorkbench() {
+    const [
+      { useSidebarTabStore },
+      { useSettingStore },
+      { useWorkflowTemplateSelectorDialog }
+    ] = await Promise.all([
+      import('./stores/workspace/sidebarTabStore'),
+      import('./platform/settings/settingStore'),
+      import('./composables/useWorkflowTemplateSelectorDialog')
+    ])
+    const view = new URLSearchParams(location.search).get('view')
+    const sidebar = useSidebarTabStore()
+    const desktop = window.innerWidth >= 900
+    if ((desktop || view === 'assets') && !sidebar.activeSidebarTabId)
+      sidebar.toggleSidebarTab('assets')
+    let firstVisit = true
+    try {
+      firstVisit = !localStorage.getItem('h3-full-workbench-v1')
+    } catch (error) {
+      console.warn('Workbench preference unavailable', error)
+    }
+    if (firstVisit && desktop)
+      await useSettingStore().set('Comfy.Sidebar.Size', 'normal')
+    if (view === 'templates' || (firstVisit && view !== 'assets'))
+      useWorkflowTemplateSelectorDialog().show('command')
+    try {
+      localStorage.setItem('h3-full-workbench-v1', 'done')
+    } catch (error) {
+      console.warn('Workbench preference unavailable', error)
+    }
+  }
   async function fitInitialView() {
     try {
       if (localStorage.getItem(viewKey)) return
@@ -119,9 +150,11 @@ if (backendAddress) {
     if (document.getElementById('splash-loader')) return
     observer.disconnect()
     requestAnimationFrame(() => {
-      void fitInitialView().catch((error: unknown) =>
-        console.warn('Unable to fit initial workflow view', error)
-      )
+      void openWorkbench()
+        .then(fitInitialView)
+        .catch((error: unknown) =>
+          console.warn('Unable to initialize H3 workbench', error)
+        )
     })
   }
   const observer = new MutationObserver(onEditorReady)

@@ -1,3 +1,4 @@
+import { fetchBackendFile } from '@/utils/backendFileFetch'
 import { computed, onScopeDispose, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -229,11 +230,11 @@ export function useTemplateWorkflows() {
   ) {
     if (sourceModule === 'default') {
       // Default templates provided by frontend are served on this separate endpoint
-      return fetch(api.fileURL(`/templates/${id}.json`), { signal }).then((r) =>
-        r.json()
-      )
+      return fetchBackendFile(api.fileURL(`/templates/${id}.json`), {
+        signal
+      }).then((r) => r.json())
     } else {
-      return fetch(
+      return fetchBackendFile(
         api.apiURL(`/workflow_templates/${sourceModule}/${id}.json`),
         { signal }
       ).then((r) => r.json())

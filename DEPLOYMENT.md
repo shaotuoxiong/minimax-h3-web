@@ -14,7 +14,10 @@ GitHub Pages 只发布构建后的静态前端。Python、ngrok 凭据、输入�
 
 ## 使用
 
-首页加载完整节点编辑器，默认提供 H3 文生视频工作流。图生视频工作流可从 ComfyUI 工作流列表打开，或导入 `public/workflows/H3-I2V-lowvram.json`。
+首页加载原版完整工作台，首次进入打开模板库，桌面展开媒体素材库并显示侧栏文字。关闭模板库后可继续使用 H3 文生视频工作流。
+`?view=templates` 可直接打开模板库，`?view=assets` 可直接打开素材库。素材库保留已生成/已导入分类、搜索与查看等原有功能。
+素材库沿用原有已公开接口，未启用额外的 input/output/models 全目录索引。已有生成记录取决于后端现有历史，重启前的文件不会自动回填历史列表。
+图生视频工作流可从 ComfyUI 工作流列表打开，或导入 `public/workflows/H3-I2V-lowvram.json`。
 保留低显存模型、CPU offload 和 batch 1。完整编辑器通过 HTTPS API 和 WebSocket 连接本机后端。
 若启动失败，底部显示错误和连接详情；可复制详情排查，而不再只显示加载标志。
 实际安卓微信兼容性仍需在用户设备验证。

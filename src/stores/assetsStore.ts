@@ -1,3 +1,4 @@
+import { fetchBackendFile } from '@/utils/backendFileFetch'
 import { useAsyncState, whenever } from '@vueuse/core'
 import { delay, difference } from 'es-toolkit'
 import { defineStore } from 'pinia'
@@ -42,7 +43,7 @@ import { useModelToNodeStore } from './modelToNodeStore'
  * Fetch input files from the internal API (OSS version)
  */
 async function fetchInputFilesFromAPI(): Promise<AssetItem[]> {
-  const response = await fetch(api.internalURL('/files/input'), {
+  const response = await fetchBackendFile(api.internalURL('/files/input'), {
     headers: {
       'Comfy-User': api.user
     }
