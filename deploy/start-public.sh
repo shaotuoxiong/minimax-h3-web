@@ -2,7 +2,9 @@
 set -euo pipefail
 project_dir=/home/sim/projects/minimax-h3-web
 if ! curl -fsS --max-time 3 http://127.0.0.1:8188/system_stats >/dev/null; then
-  nohup /home/sim/minimax-h3/start.sh >/home/sim/projects/minimax-h3-tools/logs/comfyui-start.log 2>&1 &
+  install -Dm644 "$project_dir/deploy/h3-comfyui.service" "$HOME/.config/systemd/user/h3-comfyui.service"
+  systemctl --user daemon-reload
+  systemctl --user enable --now h3-comfyui.service
   for attempt in {1..60}; do
     if curl -fsS --max-time 2 http://127.0.0.1:8188/system_stats >/dev/null; then break; fi
     sleep 1

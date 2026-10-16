@@ -1,0 +1,13 @@
+[Unit]
+Description=MiniMax H3 ComfyUI local backend
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/sim/minimax-h3/ComfyUI
+ExecStart=/home/sim/minimax-h3/start.sh
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

@@ -27,10 +27,11 @@ GitHub Pages 只发布构建后的静态前端。Python、ngrok 凭据、输入�
 bash /home/sim/projects/minimax-h3-web/deploy/start-public.sh
 ```
 
+启动脚本会安装并启动用户级 `h3-comfyui.service`，让原 ComfyUI 启动命令在后台持续运行。日志仍保存在原 logs 目录。
 电脑、网络、ComfyUI、分流器和 ngrok 需要保持在线。电脑离线时网页仍会显示，但不能生成视频。
 
 ```bash
-systemctl --user status h3-api-router.service
+systemctl --user status h3-comfyui.service h3-api-router.service
 journalctl --user -u h3-api-router.service -n 50
 docker logs --tail 50 ninfer-chat-ngrok
 ```
