@@ -6,6 +6,30 @@
   if (!panel || !status || !details || !reload) return
 
   let failed = false
+  function refreshPage() {
+    const address = new URL(location.href)
+    address.searchParams.set('h3-update', String(Date.now()))
+    location.replace(address.href)
+  }
+  function recoverModule(message: string) {
+    if (
+      !/Failed to fetch dynamically imported module|Importing a module script failed|error loading dynamically imported module/i.test(
+        message
+      )
+    )
+      return false
+    try {
+      const key = 'h3-module-recovery'
+      const previous = Number(sessionStorage.getItem(key))
+      if (Date.now() - previous < 60000) return false
+      sessionStorage.setItem(key, String(Date.now()))
+      if (status) status.textContent = '网页版本已更新，正在重新加载编辑器…'
+      refreshPage()
+      return true
+    } catch {
+      return false
+    }
+  }
   function record(message: string) {
     if (details) details.textContent += message + '\n'
   }
@@ -25,6 +49,7 @@
   }
   function scriptError(event: Event) {
     if (event instanceof ErrorEvent) {
+      if (recoverModule(event.message)) return
       fail('编辑器脚本出错：' + event.message)
       record(event.filename + ':' + event.lineno)
     } else if (event.target instanceof HTMLScriptElement) {
@@ -37,14 +62,24 @@
   }
   function rejected(event: PromiseRejectionEvent) {
     const reason: unknown = event.reason
+    if (reason instanceof Error && recoverModule(reason.message)) return
     fail(
       '编辑器初始化失败：' +
         (reason instanceof Error ? reason.message : String(reason))
     )
   }
+  function preloadError(event: Event) {
+    if (
+      'payload' in event &&
+      event.payload instanceof Error &&
+      recoverModule(event.payload.message)
+    )
+      event.preventDefault()
+  }
   reload.addEventListener('click', function () {
-    location.reload()
+    refreshPage()
   })
+  window.addEventListener('vite:preloadError', preloadError)
   window.addEventListener('error', scriptError, true)
   window.addEventListener('unhandledrejection', rejected)
   window.addEventListener('h3-startup-stage', stage)
@@ -60,6 +95,7 @@
       window.removeEventListener('error', scriptError, true)
       window.removeEventListener('unhandledrejection', rejected)
       window.removeEventListener('h3-startup-stage', stage)
+      window.removeEventListener('vite:preloadError', preloadError)
       panel.remove()
     }
   })
