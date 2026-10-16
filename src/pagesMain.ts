@@ -1,3 +1,9 @@
+window.dispatchEvent(
+  new CustomEvent('h3-startup-stage', {
+    detail: '入口脚本已运行，正在准备媒体连接'
+  })
+)
+
 const backendAddress = import.meta.env.VITE_API_BASE_URL
 if (
   backendAddress &&
@@ -43,6 +49,9 @@ if (
   }
 }
 
+window.dispatchEvent(
+  new CustomEvent('h3-startup-stage', { detail: '正在启动完整编辑器与工作流' })
+)
 await import('./bootstrap')
 
 export {}

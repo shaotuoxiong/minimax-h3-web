@@ -473,6 +473,21 @@ export default defineConfig({
   plugins: [
     {
       name: 'ngrok-browser-transport',
+      transformIndexHtml: {
+        order: 'pre',
+        handler(html) {
+          const diagnostics = stripTypeScriptTypes(
+            readFileSync(
+              new URL('./deploy/startup-diagnostics.ts', import.meta.url),
+              'utf8'
+            )
+          )
+          return html.replace(
+            '<!-- H3_STARTUP_DIAGNOSTICS -->',
+            `<script>${diagnostics}</script>`
+          )
+        }
+      },
       generateBundle() {
         this.emitFile({
           type: 'asset',

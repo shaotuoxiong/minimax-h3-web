@@ -1,4 +1,4 @@
-name: Deploy H3 video page to GitHub Pages
+name: Deploy full H3 editor to GitHub Pages
 
 on:
   push:

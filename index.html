@@ -163,6 +163,37 @@
         }
       })()
     </script>
+    <aside
+      id="startup-diagnostics"
+      data-api="%VITE_API_BASE_URL%"
+      role="status"
+      style="
+        position: fixed;
+        bottom: 16px;
+        left: 16px;
+        right: 16px;
+        z-index: 10000;
+        max-width: 680px;
+        margin: auto;
+        padding: 16px;
+        border: 1px solid #555;
+        border-radius: 10px;
+        background: #202026;
+        color: #eee;
+        font: 14px/1.6 sans-serif;
+      "
+    >
+      <strong id="startup-status">正在加载完整 ComfyUI 编辑器…</strong>
+      <details>
+        <summary>加载详情</summary>
+        <pre
+          id="startup-details"
+          style="white-space: pre-wrap; overflow-wrap: anywhere"
+        ></pre>
+      </details>
+      <button id="startup-reload" type="button" hidden>重新加载</button>
+    </aside>
+    <!-- H3_STARTUP_DIAGNOSTICS -->
     <div id="vue-app"></div>
     <script type="module" src="src/pagesMain.ts"></script>
   </body>
