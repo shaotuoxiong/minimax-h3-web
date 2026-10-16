@@ -8,19 +8,38 @@ if (
     location.origin
   )
   workerUrl.searchParams.set('backend', backendAddress)
-  await navigator.serviceWorker.register(workerUrl, {
-    scope: import.meta.env.BASE_URL,
-    type: 'module'
-  })
-  await navigator.serviceWorker.ready
-  if (!navigator.serviceWorker.controller) {
-    await new Promise<void>((resolve) => {
-      navigator.serviceWorker.addEventListener(
-        'controllerchange',
-        () => resolve(),
-        { once: true }
+  if ('serviceWorker' in navigator) {
+    try {
+      const connect = async () => {
+        await navigator.serviceWorker.register(workerUrl, {
+          scope: import.meta.env.BASE_URL
+        })
+        await navigator.serviceWorker.ready
+        if (!navigator.serviceWorker.controller) {
+          await new Promise<void>((resolve) => {
+            navigator.serviceWorker.addEventListener(
+              'controllerchange',
+              () => resolve(),
+              { once: true }
+            )
+          })
+        }
+      }
+      await Promise.race([
+        connect(),
+        new Promise<never>((_, reject) => {
+          setTimeout(
+            () => reject(new Error('Browser worker initialization timed out')),
+            5000
+          )
+        })
+      ])
+    } catch (error) {
+      console.warn(
+        'Media transport unavailable; continuing with direct API requests',
+        error
       )
-    })
+    }
   }
 }
 

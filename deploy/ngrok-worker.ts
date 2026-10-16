@@ -1,22 +1,19 @@
 /// <reference lib="webworker" />
 
-export {}
-
-declare const self: ServiceWorkerGlobalScope
-const worker = self
+const worker = self as typeof self & ServiceWorkerGlobalScope
 const backend = new URL(
   new URL(worker.location.href).searchParams.get('backend') ?? ''
 )
 
-worker.addEventListener('install', (event) => {
+worker.addEventListener('install', (event: ExtendableEvent) => {
   event.waitUntil(worker.skipWaiting())
 })
 
-worker.addEventListener('activate', (event) => {
+worker.addEventListener('activate', (event: ExtendableEvent) => {
   event.waitUntil(worker.clients.claim())
 })
 
-worker.addEventListener('fetch', (event) => {
+worker.addEventListener('fetch', (event: FetchEvent) => {
   const url = new URL(event.request.url)
   if (
     url.origin !== backend.origin ||
