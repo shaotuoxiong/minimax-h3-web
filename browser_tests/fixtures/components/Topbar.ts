@@ -1,0 +1,312 @@
+import { expect } from '@playwright/test'
+import type { Locator, Page } from '@playwright/test'
+
+import type { WorkspaceStore } from '@e2e/types/globals'
+import { TestIds } from '@e2e/fixtures/selectors'
+import { VueNodeHelpers } from '@e2e/fixtures/VueNodeHelpers'
+
+export class Topbar {
+  private readonly menuLocator: Locator
+  private readonly menuTrigger: Locator
+  readonly newWorkflowButton: Locator
+  readonly workflowTabs: Locator
+  readonly tabs: Locator
+  readonly integratedTabBarActions: Locator
+  readonly menuRootList: Locator
+
+  constructor(public readonly page: Page) {
+    this.menuLocator = page.locator('.comfy-command-menu')
+    this.menuTrigger = page.locator('.comfy-menu-button-wrapper')
+    this.menuRootList = this.menuLocator.getByRole('menubar')
+    this.newWorkflowButton = page.locator('.new-blank-workflow-button')
+    this.workflowTabs = page.getByTestId(TestIds.topbar.workflowTabs)
+    this.tabs = this.workflowTabs.getByTestId(TestIds.topbar.workflowTab)
+    this.integratedTabBarActions = this.workflowTabs.getByTestId(
+      TestIds.topbar.integratedTabBarActions
+    )
+  }
+
+  async getTabNames(): Promise<string[]> {
+    return await this.page
+      .locator('.workflow-tabs .workflow-label')
+      .allInnerTexts()
+  }
+
+  async getActiveTabName(): Promise<string> {
+    return this.page
+      .locator('.workflow-tabs .p-togglebutton-checked')
+      .innerText()
+  }
+
+  /**
+   * Get a menu item by its label, optionally within a specific parent container
+   */
+  getMenuItem(itemLabel: string, parent?: Locator): Locator {
+    if (parent) {
+      return parent.locator(`.p-tieredmenu-item:has-text("${itemLabel}")`)
+    }
+
+    return this.page.locator(`.p-menubar-item-label:text-is("${itemLabel}")`)
+  }
+
+  /**
+   * Get the visible submenu (last visible submenu in case of nested menus)
+   */
+  getVisibleSubmenu(): Locator {
+    return this.page.locator('.p-tieredmenu-submenu:visible').last()
+  }
+
+  /**
+   * Check if a menu item has an active checkmark
+   */
+  async isMenuItemActive(menuItem: Locator): Promise<boolean> {
+    const checkmark = menuItem.locator('.pi-check')
+    const classes = await checkmark.getAttribute('class')
+    return classes ? !classes.includes('invisible') : false
+  }
+
+  getWorkflowTabLabel(tabName: string): Locator {
+    return this.page.locator(
+      `.workflow-tabs .workflow-label:has-text("${tabName}")`
+    )
+  }
+
+  getWorkflowTab(tabName: string): Locator {
+    return this.getWorkflowTabLabel(tabName).locator('..')
+  }
+
+  getTab(index: number): Locator {
+    return this.page.locator('.workflow-tabs .p-togglebutton').nth(index)
+  }
+
+  /**
+   * Opens a second, blank workflow tab and returns to the first one — the
+   * lever agent tab-switch specs use to force the agent CRDT follower to
+   * unbind and rebind against the original workflow.
+   */
+  async openBlankTabAndReturn(): Promise<void> {
+    await expect(this.tabs).toHaveCount(1)
+    await this.newWorkflowButton.click()
+    await expect(this.tabs).toHaveCount(2)
+    await expect(this.getTab(1)).toHaveClass(/p-togglebutton-checked/)
+    await expect(this.page.getByTestId('node-title')).toHaveCount(0)
+    await this.getTab(0).click()
+    await expect(this.getTab(0)).toHaveClass(/p-togglebutton-checked/)
+    await expect(this.getTab(1)).not.toHaveClass(/p-togglebutton-checked/)
+  }
+
+  getActiveTab(): Locator {
+    return this.page.locator(
+      '.workflow-tabs .p-togglebutton.p-togglebutton-checked'
+    )
+  }
+
+  async closeWorkflowTab(tabName: string) {
+    const tab = this.getWorkflowTab(tabName)
+    await tab.hover()
+    await tab.locator('.close-button').click()
+  }
+
+  getSaveDialog(): Locator {
+    return this.page.getByRole('dialog').getByRole('textbox')
+  }
+
+  saveWorkflow(workflowName: string): Promise<void> {
+    return this._saveWorkflow(workflowName, 'Save')
+  }
+
+  saveWorkflowAs(workflowName: string): Promise<void> {
+    return this._saveWorkflow(workflowName, 'Save As')
+  }
+
+  exportWorkflow(workflowName: string): Promise<void> {
+    return this._saveWorkflow(workflowName, 'Export')
+  }
+
+  async _saveWorkflow(
+    workflowName: string,
+    command: 'Save' | 'Save As' | 'Export'
+  ) {
+    await this.triggerTopbarCommand(['File', command])
+    await this.getSaveDialog().fill(workflowName)
+    await this.page.keyboard.press('Enter')
+
+    await this.page.waitForFunction(
+      () => !(window.app!.extensionManager as WorkspaceStore).workflow.isBusy,
+      undefined,
+      { timeout: 3000 }
+    )
+    await this.getSaveDialog().waitFor({ state: 'hidden' })
+
+    const confirmationDialog = this.page
+      .getByRole('dialog')
+      .filter({ hasText: 'Overwrite' })
+    if (await confirmationDialog.isVisible()) return
+  }
+
+  async dismissWorkflowPopover() {
+    await this.page
+      .locator('.workflow-popover-fade')
+      .waitFor({ state: 'hidden', timeout: 5000 })
+      .catch(() => {})
+  }
+
+  async openTopbarMenu() {
+    await this.dismissWorkflowPopover()
+    // If menu is already open, close it first to reset state
+    const isAlreadyOpen = await this.menuLocator.isVisible()
+    if (isAlreadyOpen) {
+      await this.closeTopbarMenu()
+    }
+
+    await this.menuTrigger.click()
+    await this.menuLocator.waitFor({ state: 'visible' })
+    return this.menuLocator
+  }
+
+  async closeTopbarMenu() {
+    await this.page.keyboard.press('Escape')
+    await this.menuLocator.waitFor({ state: 'hidden' })
+  }
+
+  /**
+   * Set Nodes 2.0 on or off via the Comfy logo menu switch (no-op if already
+   * in the requested state).
+   */
+  async setVueNodesEnabled(enabled: boolean) {
+    await this.openTopbarMenu()
+    const nodes2Toggle = this.page.getByRole('menuitemcheckbox', {
+      name: 'Nodes 2.0'
+    })
+    await nodes2Toggle.waitFor({ state: 'visible' })
+    if ((await nodes2Toggle.isChecked()) !== enabled) {
+      await nodes2Toggle.click()
+      await this.page.waitForFunction(
+        (wantEnabled) =>
+          window.app!.ui.settings.getSettingValue('Comfy.VueNodes.Enabled') ===
+          wantEnabled,
+        enabled,
+        { timeout: 5000 }
+      )
+    }
+    await this.closeTopbarMenu()
+    await new VueNodeHelpers(this.page).waitForNodes()
+  }
+
+  async focusMenuItem(itemLabel: string): Promise<void> {
+    await this.menuRootList.focus()
+    const itemCount = await this.menuRootList.getByRole('menuitem').count()
+
+    for (let step = 0; step < itemCount; step++) {
+      await this.page.keyboard.press('ArrowDown')
+      if ((await this.getFocusedMenuItemLabel()) === itemLabel) return
+    }
+
+    throw new Error(
+      `Could not reach the "${itemLabel}" menu item with the keyboard`
+    )
+  }
+
+  private async getFocusedMenuItemLabel(): Promise<string | null> {
+    const focusedItemId = await this.menuRootList.getAttribute(
+      'aria-activedescendant'
+    )
+    if (!focusedItemId) return null
+
+    const label = this.menuLocator
+      .locator(`#${focusedItemId}`)
+      .locator('.p-menubar-item-label')
+    if ((await label.count()) === 0) return null
+    return (await label.innerText()).trim()
+  }
+
+  /**
+   * Navigate to a submenu by hovering over a menu item
+   */
+  async openSubmenu(menuItemLabel: string): Promise<Locator> {
+    const menuItem = this.getMenuItem(menuItemLabel)
+    await menuItem.hover()
+    const submenu = this.getVisibleSubmenu()
+    await submenu.waitFor({ state: 'visible' })
+    return submenu
+  }
+
+  /**
+   * Get theme menu items and interact with theme switching
+   */
+  async getThemeMenuItems() {
+    const themeSubmenu = await this.openSubmenu('Theme')
+    return {
+      submenu: themeSubmenu,
+      darkTheme: this.getMenuItem('Dark (Default)', themeSubmenu),
+      lightTheme: this.getMenuItem('Light', themeSubmenu)
+    }
+  }
+
+  /**
+   * Switch to a specific theme
+   */
+  async switchTheme(theme: 'dark' | 'light') {
+    const { darkTheme, lightTheme } = await this.getThemeMenuItems()
+    const themeItem = theme === 'dark' ? darkTheme : lightTheme
+    const themeLabel = themeItem.locator('.p-menubar-item-label')
+    await themeLabel.click()
+  }
+
+  async triggerTopbarCommand(path: string[]) {
+    if (path.length < 1) {
+      throw new Error('Path cannot be empty')
+    }
+
+    const menu = await this.openTopbarMenu()
+    const tabName = path[0]
+    const topLevelMenuItem = this.getMenuItem(tabName)
+    const topLevelMenu = menu
+      .locator('.p-tieredmenu-item')
+      .filter({ has: topLevelMenuItem })
+    await topLevelMenu.waitFor({ state: 'visible' })
+
+    // Handle top-level commands (like "New")
+    if (path.length === 1) {
+      await topLevelMenuItem.click()
+      return
+    }
+
+    await topLevelMenu.hover()
+
+    // Hover over top-level menu with retry logic for flaky submenu appearance
+    const submenu = this.getVisibleSubmenu()
+    try {
+      await submenu.waitFor({ state: 'visible', timeout: 1000 })
+    } catch {
+      // Click outside to reset, then reopen menu
+      await this.page.locator('body').click({ position: { x: 500, y: 300 } })
+      await this.menuLocator.waitFor({ state: 'hidden', timeout: 1000 })
+      await this.menuTrigger.click()
+      await this.menuLocator.waitFor({ state: 'visible' })
+      // Re-hover on top-level menu to trigger submenu
+      await topLevelMenu.hover()
+      await submenu.waitFor({ state: 'visible', timeout: 1000 })
+    }
+
+    let currentMenu = topLevelMenu
+    for (let i = 1; i < path.length; i++) {
+      const commandName = path[i]
+      const menuItem = submenu
+        .locator(`.p-tieredmenu-item:has-text("${commandName}")`)
+        .first()
+      await menuItem.waitFor({ state: 'visible' })
+
+      // For the last item, click it
+      if (i === path.length - 1) {
+        await menuItem.click()
+        return
+      }
+
+      // Otherwise, hover to open nested submenu
+      await menuItem.hover()
+      currentMenu = menuItem
+    }
+    await currentMenu.click()
+  }
+}
