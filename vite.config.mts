@@ -2,6 +2,8 @@ import { sentryVitePlugin } from '@sentry/vite-plugin'
 import tailwindcss from '@tailwindcss/vite'
 import vue from '@vitejs/plugin-vue'
 import { execSync } from 'child_process'
+import { readFileSync } from 'node:fs'
+import { stripTypeScriptTypes } from 'node:module'
 import { config as dotenvConfig } from 'dotenv'
 import type { IncomingMessage, ServerResponse } from 'http'
 import { Readable } from 'stream'
@@ -469,6 +471,21 @@ export default defineConfig({
   },
 
   plugins: [
+    {
+      name: 'ngrok-browser-transport',
+      generateBundle() {
+        this.emitFile({
+          type: 'asset',
+          fileName: 'ngrok-worker.js',
+          source: stripTypeScriptTypes(
+            readFileSync(
+              new URL('./deploy/ngrok-worker.ts', import.meta.url),
+              'utf8'
+            )
+          )
+        })
+      }
+    },
     ...(!DISABLE_VUE_PLUGINS
       ? [vueDevTools(), vue(vuePluginOptions), createHtmlPlugin({})]
       : [vue(vuePluginOptions)]),

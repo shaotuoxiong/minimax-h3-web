@@ -588,9 +588,6 @@ export class ComfyApi extends EventTarget {
       ...requestOptions
     } = options ?? {}
     const headers: HeadersInit = requestOptions.headers ?? {}
-    if (this.backendUrl?.hostname.endsWith('.ngrok-free.dev')) {
-      addHeaderEntry(headers, 'ngrok-skip-browser-warning', '1')
-    }
     let unifiedRetryOn401 = false
 
     if (isCloud) {

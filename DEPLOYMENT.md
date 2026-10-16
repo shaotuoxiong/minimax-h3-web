@@ -55,6 +55,7 @@ PAGES_BASE_PATH=/minimax-h3-web/ pnpm preview --host 127.0.0.1 --port 4173
 
 `.env.local` 保存本地开发 API；`.env.production` 保存公开的生产 API 地址。
 前端 API、媒体和 WebSocket 使用独立后端地址；静态资源使用 Pages 仓库路径，路由使用 hash。
+浏览器 Service Worker 仅为配置的 ngrok 后端路径添加官方支持的提示页跳过请求头，覆盖 API、图片和视频；不缓存模型请求或视频。
 推送 `main` 后，`.github/workflows/deploy.yml` 自动构建并通过 GitHub 官方 Pages Actions 发布。
 该仓库保留上游 GPL-3.0 许可及源码；上游发布、定时维护工作流未启用。
 

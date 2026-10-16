@@ -79,10 +79,7 @@ async function fetchRemoteConfig(
     return {
       response: await fetch(api.apiURL('/features'), {
         cache: 'no-store',
-        signal,
-        headers: import.meta.env.VITE_API_BASE_URL?.includes('.ngrok-free.dev')
-          ? { 'ngrok-skip-browser-warning': '1' }
-          : undefined
+        signal
       }),
       authenticated: false
     }

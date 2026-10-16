@@ -1,7 +1,6 @@
 import { definePreset } from '@primevue/themes'
 import Aura from '@primevue/themes/aura'
 import { captureMessage } from '@sentry/vue'
-import axios from 'axios'
 import { createPinia } from 'pinia'
 import 'primeicons/primeicons.css'
 import PrimeVue from 'primevue/config'
@@ -41,21 +40,6 @@ import { i18n } from './i18n'
 
 const isCloud = __DISTRIBUTION__ === 'cloud'
 const hasHostTelemetryBridge = Boolean(window.__comfyDesktop2?.Telemetry)
-
-if (import.meta.env.VITE_API_BASE_URL) {
-  const backend = new URL(import.meta.env.VITE_API_BASE_URL)
-  if (backend.hostname.endsWith('.ngrok-free.dev')) {
-    axios.interceptors.request.use((config) => {
-      if (
-        new URL(config.url ?? '', config.baseURL ?? location.href).origin ===
-        backend.origin
-      ) {
-        config.headers.set('ngrok-skip-browser-warning', '1')
-      }
-      return config
-    })
-  }
-}
 
 if (isCloud) stripPaymentReturnParams()
 
