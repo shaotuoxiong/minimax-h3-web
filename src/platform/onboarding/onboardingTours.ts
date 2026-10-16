@@ -123,7 +123,7 @@ const TOURS: Partial<Record<EntryPath, TourDefinition>> = {
     {
       kind: 'landing',
       name: 'landing',
-      image: '/assets/images/app-mode-landing.png'
+      image: `${import.meta.env.BASE_URL}assets/images/app-mode-landing.png`
     },
     {
       kind: 'spotlight',

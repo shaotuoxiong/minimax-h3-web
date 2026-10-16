@@ -329,7 +329,7 @@ const vuePluginOptions = process.env.VITEST
   : undefined
 
 export default defineConfig({
-  base: DISTRIBUTION === 'cloud' ? '/' : '',
+  base: process.env.PAGES_BASE_PATH ?? (DISTRIBUTION === 'cloud' ? '/' : ''),
   server: {
     host: DEV_AGENT_COMFY_TOKEN
       ? undefined
@@ -506,7 +506,7 @@ export default defineConfig({
       name: 'inject-user-stylesheet-links',
       enforce: 'post',
       transformIndexHtml(html) {
-        if (DISTRIBUTION === 'cloud') return html
+        if (DISTRIBUTION === 'cloud' || process.env.PAGES_BASE_PATH) return html
 
         return {
           html,
@@ -911,7 +911,7 @@ export default defineConfig({
     },
     // Pin the timezone so date-formatting assertions are deterministic
     // regardless of the contributor's local timezone (CI runs in UTC).
-    env: { TZ: 'UTC' },
+    env: { TZ: 'UTC', VITE_API_BASE_URL: '' },
     setupFiles: ['./vitest.timer.setup.ts', './vitest.setup.ts'],
     retry: process.env.CI ? 2 : 0,
     include: [

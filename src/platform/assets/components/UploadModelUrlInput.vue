@@ -111,8 +111,8 @@ const url = computed({
   set: (value: string) => emit('update:modelValue', value)
 })
 
-const civitaiIcon = '/assets/images/civitai.svg'
+const civitaiIcon = `${import.meta.env.BASE_URL}assets/images/civitai.svg`
 const civitaiUrl = 'https://civitai.com/models'
-const huggingFaceIcon = '/assets/images/hf-logo.svg'
+const huggingFaceIcon = `${import.meta.env.BASE_URL}assets/images/hf-logo.svg`
 const huggingFaceUrl = 'https://huggingface.co'
 </script>

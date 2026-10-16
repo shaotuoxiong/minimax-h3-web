@@ -448,6 +448,9 @@ export class ComfyApi extends EventTarget {
   >()
   api_host: string
   api_base: string
+  private readonly backendUrl = import.meta.env.VITE_API_BASE_URL
+    ? new URL(import.meta.env.VITE_API_BASE_URL)
+    : undefined
   /**
    * The client id from the initial session storage.
    */
@@ -513,24 +516,27 @@ export class ComfyApi extends EventTarget {
   constructor() {
     super()
     this.user = ''
-    this.api_host = location.host
-    this.api_base = isCloud
-      ? ''
-      : location.pathname.split('/').slice(0, -1).join('/')
+    this.api_host = this.backendUrl?.host ?? location.host
+    this.api_base = this.backendUrl
+      ? this.backendUrl.pathname.replace(/\/$/, '')
+      : isCloud
+        ? ''
+        : location.pathname.split('/').slice(0, -1).join('/')
     this.initialClientId = sessionStorage.getItem('clientId')
   }
 
   internalURL(route: string): string {
-    return this.api_base + '/internal' + route
+    return (this.backendUrl?.origin ?? '') + this.api_base + '/internal' + route
   }
 
   apiURL(route: string): string {
-    if (route.startsWith('/api')) return this.api_base + route
-    return this.api_base + '/api' + route
+    if (route.startsWith('/api'))
+      return (this.backendUrl?.origin ?? '') + this.api_base + route
+    return (this.backendUrl?.origin ?? '') + this.api_base + '/api' + route
   }
 
   fileURL(route: string): string {
-    return this.api_base + route
+    return (this.backendUrl?.origin ?? '') + this.api_base + route
   }
 
   /**
@@ -582,6 +588,9 @@ export class ComfyApi extends EventTarget {
       ...requestOptions
     } = options ?? {}
     const headers: HeadersInit = requestOptions.headers ?? {}
+    if (this.backendUrl?.hostname.endsWith('.ngrok-free.dev')) {
+      addHeaderEntry(headers, 'ngrok-skip-browser-warning', '1')
+    }
     let unifiedRetryOn401 = false
 
     if (isCloud) {
@@ -898,7 +907,10 @@ export class ComfyApi extends EventTarget {
       }
     }
 
-    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
+    const protocol =
+      (this.backendUrl?.protocol ?? window.location.protocol) === 'https:'
+        ? 'wss'
+        : 'ws'
     const baseUrl = `${protocol}://${this.api_host}${this.api_base}/ws`
     const query = params.toString()
     const wsUrl = query ? `${baseUrl}?${query}` : baseUrl

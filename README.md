@@ -1,3 +1,13 @@
+# MiniMax H3 · GitHub Pages
+
+网站：https://shaotuoxiong.github.io/minimax-h3-web/
+
+基于官方 ComfyUI_frontend v1.55.17。静态前端在 GitHub Pages，H3 模型在本机 Ubuntu，通过已有 ngrok 固定域名连接。
+
+启动、构建及接口配置见 [DEPLOYMENT.md](DEPLOYMENT.md)。下方保留上游项目说明。
+
+---
+
 <div align="center">
 
 # ComfyUI_frontend

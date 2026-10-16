@@ -21,19 +21,23 @@ const SECRET_PROVIDERS: ProviderConfig[] = [
   {
     value: 'huggingface',
     label: 'HuggingFace',
-    logo: '/assets/images/hf-logo.svg'
+    logo: `${import.meta.env.BASE_URL}assets/images/hf-logo.svg`
   },
-  { value: 'civitai', label: 'Civitai', logo: '/assets/images/civitai.svg' },
+  {
+    value: 'civitai',
+    label: 'Civitai',
+    logo: `${import.meta.env.BASE_URL}assets/images/civitai.svg`
+  },
   {
     value: 'runway',
     label: 'Runway',
-    logo: '/assets/images/runway.svg',
+    logo: `${import.meta.env.BASE_URL}assets/images/runway.svg`,
     helpKey: 'secrets.providerHelp.runway'
   },
   {
     value: 'gemini',
     label: 'Google Gemini',
-    logo: '/assets/images/gemini.svg',
+    logo: `${import.meta.env.BASE_URL}assets/images/gemini.svg`,
     helpKey: 'secrets.providerHelp.gemini'
   }
 ]

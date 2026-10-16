@@ -1,0 +1,11 @@
+services:
+  ngrok:
+    command:
+      - http
+      - http://127.0.0.1:8189
+      - --url
+      - https://letdown-riverboat-flatware.ngrok-free.dev
+      - --log
+      - stdout
+      - --log-format
+      - json

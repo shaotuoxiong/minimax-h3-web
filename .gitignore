@@ -71,6 +71,16 @@ browser_tests/tests/_recorded-code.txt
 browser_tests/**/*.raw.spec.ts
 
 .env
+.private/
+__pycache__/
+*.py[cod]
+models/
+venv/
+.venv/
+*.safetensors
+*.ckpt
+*.pt
+*.pth
 
 dist.zip
 

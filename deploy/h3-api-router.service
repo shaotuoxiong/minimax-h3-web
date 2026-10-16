@@ -1,0 +1,11 @@
+[Unit]
+Description=H3 and existing chat API router
+After=network.target
+
+[Service]
+ExecStart=/home/sim/minimax-h3/venv/bin/python -I /home/sim/projects/minimax-h3-web/deploy/local_api_proxy.py
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=default.target

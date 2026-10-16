@@ -18,6 +18,7 @@ declare global {
   }
 
   interface ImportMetaEnv {
+    VITE_API_BASE_URL?: string
     VITE_APP_VERSION?: string
     VITE_BILLING_WEB_URL?: string
     VITE_STAGING_API_BASE_URL?: string

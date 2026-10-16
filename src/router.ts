@@ -51,12 +51,13 @@ function trackPageView(): void {
 }
 
 const router = createRouter({
-  history: isFileProtocol
-    ? createWebHashHistory()
-    : // Base path must be specified to ensure correct relative paths
-      // Example: For URL 'http://localhost:7801/ComfyBackendDirect',
-      // we need this base path or assets will incorrectly resolve from 'http://localhost:7801/'
-      createWebHistory(basePath),
+  history:
+    isFileProtocol || import.meta.env.VITE_API_BASE_URL
+      ? createWebHashHistory(import.meta.env.BASE_URL)
+      : // Base path must be specified to ensure correct relative paths
+        // Example: For URL 'http://localhost:7801/ComfyBackendDirect',
+        // we need this base path or assets will incorrectly resolve from 'http://localhost:7801/'
+        createWebHistory(basePath),
   routes: [
     ...(isCloud ? cloudOnboardingRoutes : []),
     {

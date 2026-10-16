@@ -11,5 +11,5 @@ import { useFavicon } from '@vueuse/core'
 
 import WorkspaceAuthGate from '@/platform/workspace/auth/WorkspaceAuthGate.vue'
 
-useFavicon('/assets/favicon.ico')
+useFavicon(`${import.meta.env.BASE_URL}assets/favicon.ico`)
 </script>

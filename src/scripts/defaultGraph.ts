@@ -1,4 +1,6 @@
 import type { ComfyWorkflowJSON } from '@/platform/workflow/validation/schemas/workflowSchema'
+import { zComfyWorkflow } from '@/platform/workflow/validation/schemas/workflowSchema'
+import h3Graph from '@/assets/workflows/H3-T2V-lowvram.json' with { type: 'json' }
 
 const testDefaultGraph: ComfyWorkflowJSON = {
   last_node_id: 9,
@@ -556,8 +558,9 @@ const prodDefaultGraph: ComfyWorkflowJSON = {
   version: 0.4
 }
 
-export const defaultGraph: ComfyWorkflowJSON =
-  import.meta.env.VITE_USE_LEGACY_DEFAULT_GRAPH === 'true'
+export const defaultGraph: ComfyWorkflowJSON = import.meta.env.VITE_API_BASE_URL
+  ? zComfyWorkflow.parse(h3Graph)
+  : import.meta.env.VITE_USE_LEGACY_DEFAULT_GRAPH === 'true'
     ? testDefaultGraph
     : prodDefaultGraph
 

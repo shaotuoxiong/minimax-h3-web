@@ -4,7 +4,7 @@ import { watch } from 'vue'
 import { useExecutionStore } from '@/stores/executionStore'
 
 export const useProgressFavicon = () => {
-  const defaultFavicon = '/assets/images/favicon_progress_16x16/frame_9.png'
+  const defaultFavicon = `${import.meta.env.BASE_URL}assets/images/favicon_progress_16x16/frame_9.png`
   const favicon = useFavicon(defaultFavicon)
   const executionStore = useExecutionStore()
   const totalFrames = 10
@@ -19,7 +19,7 @@ export const useProgressFavicon = () => {
           Math.max(0, Math.floor(progress * totalFrames)),
           totalFrames - 1
         )
-        favicon.value = `/assets/images/favicon_progress_16x16/frame_${frame}.png`
+        favicon.value = `${import.meta.env.BASE_URL}assets/images/favicon_progress_16x16/frame_${frame}.png`
       }
     }
   )
