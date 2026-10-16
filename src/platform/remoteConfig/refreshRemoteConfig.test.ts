@@ -256,6 +256,28 @@ describe('refreshRemoteConfig', () => {
   })
 
   describe('without auth', () => {
+    it('bootstraps H3 configuration directly before the editor API initializes', async () => {
+      vi.stubEnv('VITE_H3_ONLY', 'true')
+      vi.stubEnv('VITE_API_BASE_URL', 'https://example.ngrok-free.dev/h3/')
+      vi.mocked(global.fetch).mockResolvedValue(
+        new Response(JSON.stringify(mockConfig))
+      )
+
+      await refreshRemoteConfig({ useAuth: false })
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        'https://example.ngrok-free.dev/h3/api/features',
+        expect.objectContaining({
+          cache: 'no-store',
+          headers: { 'ngrok-skip-browser-warning': '1' }
+        })
+      )
+      expect(api.apiURL).not.toHaveBeenCalled()
+      expect(api.fetchApi).not.toHaveBeenCalled()
+      expect(remoteConfigState.value).toBe('anonymous')
+      expect(remoteConfig.value).toEqual(mockConfig)
+    })
+
     it('builds the no-auth url via api.apiURL so a path prefix is respected', async () => {
       cachedLegacyBillingMigrationEnabled.value = true
       vi.mocked(global.fetch).mockResolvedValue(mockSuccessResponse())

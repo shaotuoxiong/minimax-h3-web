@@ -74,10 +74,16 @@ async function fetchRemoteConfig(
   useAuth: boolean,
   signal?: AbortSignal
 ): Promise<{ response: Response; authenticated: boolean }> {
-  const { api } = await import('@/scripts/api')
   if (!useAuth) {
+    const backend =
+      import.meta.env.VITE_H3_ONLY === 'true'
+        ? import.meta.env.VITE_API_BASE_URL
+        : undefined
+    const endpoint = backend
+      ? backend.replace(/\/$/, '') + '/api/features'
+      : (await import('@/scripts/api')).api.apiURL('/features')
     return {
-      response: await fetch(api.apiURL('/features'), {
+      response: await fetch(endpoint, {
         cache: 'no-store',
         signal,
         headers: import.meta.env.VITE_API_BASE_URL?.includes('.ngrok-free.dev')
@@ -87,6 +93,7 @@ async function fetchRemoteConfig(
       authenticated: false
     }
   }
+  const { api } = await import('@/scripts/api')
   let authenticated = false
   const response = await api.fetchApi('/features', {
     cache: 'no-store',

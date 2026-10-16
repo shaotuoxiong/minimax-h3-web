@@ -14,6 +14,7 @@ import { flushProxyWidgetMigration } from '@/core/graph/subgraph/migration/proxy
 import { autoExposeKnownPreviewNodes } from '@/core/graph/subgraph/promotionUtils'
 import { LGraph } from '@/lib/litegraph/src/litegraph'
 import { firebaseIdentity } from '@/platform/auth/firebaseIdentity'
+import { refreshRemoteConfig } from '@/platform/remoteConfig/refreshRemoteConfig'
 import {
   configValueOrDefault,
   remoteConfig
@@ -61,11 +62,16 @@ if (isCloud) stripPaymentReturnParams()
 
 bootstrapTracer.armWatchdog()
 
+if (import.meta.env.VITE_H3_ONLY === 'true')
+  window.dispatchEvent(
+    new CustomEvent('h3-startup-stage', {
+      detail: '编辑器脚本已下载，正在读取后端配置'
+    })
+  )
+
 // Load remote config before the Firebase app resolves below, so getFirebaseConfig()
 // resolves against the server's runtime values instead of the build-time defaults.
 await bootstrapTracer.settle('startup/remote-config', async () => {
-  const { refreshRemoteConfig } =
-    await import('@/platform/remoteConfig/refreshRemoteConfig')
   await refreshRemoteConfig({ useAuth: false })
 })
 
@@ -199,4 +205,10 @@ const bootstrapStore = useBootstrapStore(pinia)
 void bootstrapStore.startStoreBootstrap()
 
 app.mount('#vue-app')
+if (import.meta.env.VITE_H3_ONLY === 'true')
+  window.dispatchEvent(
+    new CustomEvent('h3-startup-stage', {
+      detail: '工作台已初始化，正在加载节点和工作流'
+    })
+  )
 bootstrapTracer.milestone('app-mounted')

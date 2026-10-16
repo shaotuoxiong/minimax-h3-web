@@ -780,6 +780,15 @@ export default defineConfig({
         ...assetCacheBustNames(),
         codeSplitting: {
           groups: [
+            ...(process.env.H3_COMPACT_BUNDLE === 'true'
+              ? [
+                  {
+                    name: 'h3-workbench',
+                    test: /[\\/]src[\\/](main|scripts[\\/]app)\.ts$/,
+                    priority: 30
+                  }
+                ]
+              : []),
             // Framework core - highest priority, very stable
             {
               name: 'vendor-vue-core',

@@ -11,6 +11,31 @@ import local_api_proxy
 
 
 class WebSocketProxyTest(unittest.IsolatedAsyncioTestCase):
+    async def test_node_definitions_are_compressed_without_changing_json(self):
+        data = {"nodes": [{"name": "H3", "description": "video"}] * 5000}
+
+        async def definitions(request):
+            return web.json_response(data)
+
+        backend = web.Application()
+        backend.router.add_get("/api/object_info", definitions)
+        proxy = web.Application()
+        proxy.cleanup_ctx.append(local_api_proxy.session_context)
+        proxy.router.add_get("/h3/api/object_info", local_api_proxy.handle)
+        async with TestServer(backend) as backend_server:
+            with patch.object(local_api_proxy, "UPSTREAM", str(backend_server.make_url(""))):
+                async with TestServer(proxy) as proxy_server:
+                    async with ClientSession() as session:
+                        async with session.get(
+                            proxy_server.make_url("/h3/api/object_info"),
+                            headers={"Origin": "https://shaotuoxiong.github.io"},
+                        ) as response:
+                            self.assertEqual(response.status, 200)
+                            self.assertIn(response.headers["Content-Encoding"], ["gzip", "deflate"])
+                            self.assertIn("Origin", response.headers["Vary"])
+                            self.assertIn("Accept-Encoding", response.headers["Vary"])
+                            self.assertEqual(await response.json(), data)
+
     async def test_frontend_serves_build_without_exposing_other_directories(self):
         with TemporaryDirectory() as temporary:
             root = Path(temporary)

@@ -36,6 +36,7 @@ python3 deploy/publish_frontend.py
 systemctl --user restart h3-api-router.service
 ```
 
+分流器对未压缩的 JSON 响应协商压缩，减少节点定义等必需接口的传输量；已压缩的响应不重复压缩。
 发布脚本为文本资源生成 gzip 副本，文件逐个原子替换，最后更新首页；首页要求重新校验缓存。30 秒仍在加载时提示网络较慢，90 秒仍未完成时显示诊断。
 
 `deploy/frontend/` 不提交 Git。保留之前的静态资源，避免已打开页面引用的旧脚本立即失效。
@@ -70,10 +71,11 @@ systemctl --user stop h3-api-router.service
 
 ```bash
 pnpm install --frozen-lockfile
-PAGES_BASE_PATH=/minimax-h3-web/ ENABLE_MINIFY=true pnpm build
+H3_COMPACT_BUNDLE=true PAGES_BASE_PATH=/minimax-h3-web/ ENABLE_MINIFY=true pnpm build
 PAGES_BASE_PATH=/minimax-h3-web/ pnpm preview --host 127.0.0.1 --port 4173
 ```
 
+`H3_COMPACT_BUNDLE=true` 合并编辑器核心模块，减少慢连接下的脚本请求，其他功能继续按需加载。启动时直接读取 H3 公开配置，避免配置模块与编辑器 API 循环等待。
 `pnpm build` 检查完整编辑器类型，再通过 `vite.config.mts` 构建。
 `.env.production` 中 `VITE_H3_ONLY=true` 启用 H3 专用目录，并配置公开的生产 API；开发环境通过 `.env.local` 指向本机分流器。
 开发命令为 `pnpm dev`。Pages Actions 使用仓库实际 base 路径构建并发布 dist。

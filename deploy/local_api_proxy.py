@@ -116,6 +116,14 @@ async def handle(request):
         }
         response_headers.update(cors)
         response = web.StreamResponse(status=backend.status, headers=response_headers)
+        if (
+            backend.content_type == "application/json"
+            and "Content-Encoding" not in backend.headers
+        ):
+            response.enable_compression()
+            response.headers["Vary"] = ", ".join(
+                filter(None, [response.headers.get("Vary"), "Accept-Encoding"])
+            )
         await response.prepare(request)
         async for chunk in backend.content.iter_chunked(65536):
             await response.write(chunk)

@@ -29,6 +29,7 @@ jobs:
           PAGES_BASE_PATH: ${{ steps.pages.outputs.base_path }}/
           ENABLE_MINIFY: 'true'
           GENERATE_SOURCEMAP: 'false'
+          H3_COMPACT_BUNDLE: 'true'
       - uses: actions/upload-pages-artifact@v4
         with:
           path: dist
