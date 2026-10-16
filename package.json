@@ -14,7 +14,7 @@
     "build-storybook": "storybook build",
     "build:types": "vite build --config vite.types.config.mts && tsx scripts/prepare-types.ts",
     "build:analyze": "cross-env ANALYZE_BUNDLE=true pnpm build",
-    "build": "pnpm typecheck && vite build --config vite.config.mts",
+    "build": "pnpm typecheck:mobile && vite build --config vite.mobile.config.mts",
     "clean": "pnpm dlx rimraf dist dist-ssr coverage playwright-report blob-report test-results node_modules/.vite apps/billing-web/dist apps/website/dist",
     "clean:all": "pnpm clean && pnpm dlx rimraf node_modules",
     "container:start": "scripts/start-comfyui-e2e.sh",
@@ -31,7 +31,7 @@
     "dev:electron": "cross-env DISTRIBUTION=desktop vite --config vite.electron.config.mts",
     "dev:no-vue": "cross-env DISABLE_VUE_PLUGINS=true vite --config vite.config.mts",
     "dev:test": "cross-env VITE_USE_LEGACY_DEFAULT_GRAPH=true vite --config vite.config.mts",
-    "dev": "vite --config vite.config.mts",
+    "dev": "vite --config vite.mobile.config.mts",
     "devtools:pycheck": "python3 -m compileall -q tools/devtools",
     "fallow": "fallow",
     "fallow:audit": "fallow audit",
@@ -54,7 +54,7 @@
     "oxlint:main": "oxlint src scripts browser_tests tools/oxlint-plugins apps/website/src apps/website/scripts apps/billing-web/src packages/account-core/src packages/account-ui/src packages/billing-contract/src --type-aware",
     "oxlint": "pnpm oxlint:main && pnpm oxlint:audit",
     "prepare": "pnpm exec husky || true && git config blame.ignoreRevsFile .git-blame-ignore-revs || true",
-    "preview": "vite preview --config vite.config.mts",
+    "preview": "vite preview --config vite.mobile.config.mts",
     "storybook": "storybook dev -p 6006",
     "stylelint:fix": "stylelint --cache --cache-strategy content --fix '{apps,packages,src}/**/*.{css,vue}'",
     "stylelint": "stylelint --cache --cache-strategy content '{apps,packages,src}/**/*.{css,vue}'",
@@ -88,7 +88,9 @@
     "zipdist": "tsx scripts/zipdist.ts",
     "test:custom-nodes:local": "start-server-and-test backend:custom-nodes http-get://127.0.0.1:8288/system_stats dev:custom-nodes http-get://localhost:5173 test:custom-nodes",
     "backend:custom-nodes": "sh -c 'cd \"${TEST_COMFYUI_DIR:?point at your ComfyUI checkout (README Prerequisites)}\"; cp \"$OLDPWD/browser_tests/assets/plain_video.mp4\" input/ || { echo \"could not stage plain_video.mp4 into $PWD/input - the curated VHS workflow cannot run without it\" >&2; exit 1; }; PY=python3; [ -x venv/bin/python ] && PY=venv/bin/python; [ -x .venv/bin/python ] && PY=.venv/bin/python; \"$PY\" main.py --port 8288 --multi-user --cache-none'",
-    "dev:custom-nodes": "cross-env DEV_SERVER_COMFYUI_URL=http://127.0.0.1:8288 vite --config vite.config.mts --strictPort"
+    "dev:custom-nodes": "cross-env DEV_SERVER_COMFYUI_URL=http://127.0.0.1:8288 vite --config vite.config.mts --strictPort",
+    "build:editor": "pnpm typecheck && vite build --config vite.config.mts",
+    "typecheck:mobile": "tsc -p mobile/tsconfig.json"
   },
   "dependencies": {
     "@alloc/quick-lru": "catalog:",

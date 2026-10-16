@@ -2,7 +2,7 @@
 
 网站：https://shaotuoxiong.github.io/minimax-h3-web/
 
-基于官方 ComfyUI_frontend v1.55.17。静态前端在 GitHub Pages，H3 模型在本机 Ubuntu，通过已有 ngrok 固定域名连接。
+轻量视频生成页面，打开即显示文字和照片输入框；不加载完整 ComfyUI 编辑器。前端在 GitHub Pages，H3 模型通过本机 ComfyUI 运行，沿用已有 ngrok 固定域名。
 
 启动、构建及接口配置见 [DEPLOYMENT.md](DEPLOYMENT.md)。下方保留上游项目说明。
 

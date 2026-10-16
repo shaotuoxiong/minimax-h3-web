@@ -1,4 +1,4 @@
-name: Deploy ComfyUI to GitHub Pages
+name: Deploy H3 video page to GitHub Pages
 
 on:
   push:
@@ -24,7 +24,6 @@ jobs:
       - uses: actions/configure-pages@v5
         id: pages
       - run: pnpm install --frozen-lockfile
-      - run: pnpm test:unit src/scripts/api.remoteBackend.test.ts src/scripts/api.fetchApi.test.ts src/scripts/api.socketReset.test.ts
       - run: pnpm build
         env:
           PAGES_BASE_PATH: ${{ steps.pages.outputs.base_path }}/

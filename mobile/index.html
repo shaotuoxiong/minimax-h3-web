@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f4f5f7" />
+    <title>H3 视频生成</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <span class="mark">H3</span>
+        <div>
+          <h1>视频生成</h1>
+          <p>把文字或照片，变成一个短镜头。</p>
+        </div>
+      </header>
+      <section class="connection">
+        <span id="connection" role="status">页面已打开，正在连接本机模型…</span
+        ><button id="retry" type="button">重新连接</button>
+      </section>
+      <form id="generator">
+        <label for="prompt">描述你想看到的画面</label>
+        <textarea id="prompt" rows="5" required maxlength="6000">
+A golden retriever running through a green grass field in daylight, cinematic camera movement, realistic motion, natural lighting.</textarea>
+        <label for="image"
+          >参考照片 <span>可选，上传后生成图生视频</span></label
+        >
+        <input
+          id="image"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+        />
+        <img id="reference" alt="已选参考照片" hidden />
+        <p class="settings">短视频 · 56 帧 · 单任务 · 低显存设置</p>
+        <button id="generate" class="primary" type="submit" disabled>
+          生成视频
+        </button>
+      </form>
+      <p id="status" role="status" aria-live="polite">
+        连接完成后即可生成。页面无需等待模型加载。
+      </p>
+      <section id="result" hidden>
+        <h2>生成结果</h2>
+        <video
+          id="video"
+          controls
+          playsinline
+          webkit-playsinline
+          preload="metadata"
+        ></video
+        ><a id="download" class="download">保存视频</a>
+      </section>
+      <footer>
+        视频在你的 Ubuntu 电脑上生成。电脑和本地服务需要保持在线。
+      </footer>
+      <noscript
+        >请在浏览器设置中允许 JavaScript，或使用系统浏览器打开。</noscript
+      >
+    </main>
+    <script defer src="./app.js"></script>
+  </body>
+</html>
