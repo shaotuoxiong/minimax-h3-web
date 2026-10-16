@@ -1,5 +1,7 @@
 import { reactive } from 'vue'
 
+import { fetchBackendFile } from '@/utils/backendFileFetch'
+
 interface CachedMedia {
   src: string
   blob?: Blob
@@ -113,9 +115,14 @@ class MediaCacheService {
 
     try {
       // Fetch the media
-      const response = await fetch(src, { cache: 'force-cache' })
-      if (!response.ok) {
-        console.error(`Failed to fetch: ${response.status}`)
+      const response = await fetchBackendFile(src, { cache: 'force-cache' })
+      if (
+        !response.ok ||
+        response.headers.get('content-type')?.includes('text/html')
+      ) {
+        console.error(
+          `Failed to fetch media: HTTP ${response.status}, ${response.headers.get('content-type')}`
+        )
         const errorEntry: CachedMedia = {
           src,
           error: true,

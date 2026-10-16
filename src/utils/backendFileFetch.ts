@@ -11,7 +11,11 @@ export function fetchBackendFile(url: string, options: RequestInit = {}) {
       (target.pathname === prefix || target.pathname.startsWith(prefix + '/'))
     ) {
       headers.set('ngrok-skip-browser-warning', '1')
-      return fetch(url, { ...options, headers })
+      return fetch(url, {
+        ...options,
+        cache: options.cache === 'force-cache' ? 'reload' : options.cache,
+        headers
+      })
     }
   }
   return fetch(url, options)

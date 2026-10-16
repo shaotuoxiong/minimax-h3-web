@@ -16,6 +16,7 @@ GitHub Pages 只发布构建后的静态前端。Python、ngrok 凭据、输入�
 
 首页加载原版完整工作台，首次进入打开模板库，桌面展开媒体素材库并显示侧栏文字。关闭模板库后可继续使用 H3 文生视频工作流。
 `?view=templates` 可直接打开模板库，`?view=assets` 可直接打开素材库。素材库保留已生成/已导入分类、搜索与查看等原有功能。
+模板封面通过带隧道请求头的 fetch 下载并使用 Blob 预览，不依赖 Service Worker；远程媒体刷新错误 HTTP 缓存，并拒绝将 HTML 提示页作为图片缓存。
 素材库沿用原有已公开接口，未启用额外的 input/output/models 全目录索引。已有生成记录取决于后端现有历史，重启前的文件不会自动回填历史列表。
 图生视频工作流可从 ComfyUI 工作流列表打开，或导入 `public/workflows/H3-I2V-lowvram.json`。
 保留低显存模型、CPU offload 和 batch 1。完整编辑器通过 HTTPS API 和 WebSocket 连接本机后端。
