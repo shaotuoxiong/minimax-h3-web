@@ -2,7 +2,7 @@
 
 网站：https://shaotuoxiong.github.io/minimax-h3-web/
 
-完整 ComfyUI 工作台，包含模板库、媒体素材库、模型库、节点库、工作流和生成队列。首次进入打开模板库，桌面侧栏展开素材库。加载失败时显示脚本、资源或 API 诊断。前端在 GitHub Pages，H3 模型通过本机 ComfyUI 运行，沿用已有 ngrok 固定域名。
+完整 ComfyUI 工作台，包含模板库、媒体素材库、模型库、节点库、工作流和生成队列。首页直接进入 H3 工作流，桌面侧栏展示工作流列表；模板库只保留 H3 文生视频和图生视频，不再预加载其他模型的模板。加载失败时显示脚本、资源或 API 诊断。前端在 GitHub Pages，H3 模型通过本机 ComfyUI 运行，沿用已有 ngrok 固定域名。
 
 启动、构建及接口配置见 [DEPLOYMENT.md](DEPLOYMENT.md)。下方保留上游项目说明。
 

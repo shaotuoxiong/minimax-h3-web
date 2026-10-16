@@ -31,7 +31,7 @@ if (
           })
         }
       }
-      await Promise.race([
+      void Promise.race([
         connect(),
         new Promise<never>((_, reject) => {
           setTimeout(
@@ -39,7 +39,12 @@ if (
             5000
           )
         })
-      ])
+      ]).catch((error: unknown) => {
+        console.warn(
+          'Media transport unavailable; continuing with direct API requests',
+          error
+        )
+      })
     } catch (error) {
       console.warn(
         'Media transport unavailable; continuing with direct API requests',
@@ -69,8 +74,11 @@ if (backendAddress) {
     const view = new URLSearchParams(location.search).get('view')
     const sidebar = useSidebarTabStore()
     const desktop = window.innerWidth >= 900
+    const h3Only = import.meta.env.VITE_H3_ONLY === 'true'
     if ((desktop || view === 'assets') && !sidebar.activeSidebarTabId)
-      sidebar.toggleSidebarTab('assets')
+      sidebar.toggleSidebarTab(
+        view === 'assets' ? 'assets' : h3Only ? 'workflows' : 'assets'
+      )
     let firstVisit = true
     try {
       firstVisit = !localStorage.getItem('h3-full-workbench-v1')
@@ -79,7 +87,10 @@ if (backendAddress) {
     }
     if (firstVisit && desktop)
       await useSettingStore().set('Comfy.Sidebar.Size', 'normal')
-    if (view === 'templates' || (firstVisit && view !== 'assets'))
+    if (
+      (view === 'templates' && !h3Only) ||
+      (firstVisit && view !== 'assets' && !h3Only)
+    )
       useWorkflowTemplateSelectorDialog().show('command')
     try {
       localStorage.setItem('h3-full-workbench-v1', 'done')

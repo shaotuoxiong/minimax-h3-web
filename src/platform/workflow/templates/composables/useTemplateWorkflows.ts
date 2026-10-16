@@ -1,3 +1,4 @@
+import { h3TemplateUrl } from '@/platform/workflow/templates/h3Templates'
 import { fetchBackendFile } from '@/utils/backendFileFetch'
 import { computed, onScopeDispose, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -87,6 +88,8 @@ export function useTemplateWorkflows() {
     sourceModule: string,
     index = '1'
   ) => {
+    const localThumbnail = h3TemplateUrl(template.name, 'svg')
+    if (localThumbnail) return localThumbnail
     const basePath =
       sourceModule === 'default'
         ? api.fileURL(`/templates/${template.name}`)
@@ -228,6 +231,11 @@ export function useTemplateWorkflows() {
     sourceModule: string,
     signal: AbortSignal
   ) {
+    const localTemplate = h3TemplateUrl(id, 'json')
+    if (localTemplate)
+      return fetchBackendFile(localTemplate, { signal }).then((response) =>
+        response.json()
+      )
     if (sourceModule === 'default') {
       // Default templates provided by frontend are served on this separate endpoint
       return fetchBackendFile(api.fileURL(`/templates/${id}.json`), {

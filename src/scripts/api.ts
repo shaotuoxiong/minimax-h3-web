@@ -1,3 +1,4 @@
+import { h3Templates } from '@/platform/workflow/templates/h3Templates'
 import type {
   GetEmbeddingsResponse,
   GetExtensionsResponse,
@@ -1171,6 +1172,7 @@ export class ComfyApi extends EventTarget {
   async getWorkflowTemplates(): Promise<{
     [customNodesName: string]: string[]
   }> {
+    if (import.meta.env.VITE_H3_ONLY === 'true') return {}
     const res = await this.fetchApi('/workflow_templates')
     return await res.json()
   }
@@ -1182,6 +1184,8 @@ export class ComfyApi extends EventTarget {
   async getCoreWorkflowTemplates(
     locale?: string
   ): Promise<WorkflowTemplates[]> {
+    if (import.meta.env.VITE_H3_ONLY === 'true')
+      return structuredClone(h3Templates)
     const fileName =
       locale && locale !== 'en' ? `index.${locale}.json` : 'index.json'
     try {
@@ -1714,6 +1718,7 @@ export class ComfyApi extends EventTarget {
     return subgraph.data
   }
   async getGlobalSubgraphs(): Promise<Record<string, GlobalSubgraphData>> {
+    if (import.meta.env.VITE_H3_ONLY === 'true') return {}
     const resp = await api.fetchApi('/global_subgraphs')
     if (resp.status !== 200) return {}
     const subgraphs: Record<string, GlobalSubgraphData> = await resp.json()

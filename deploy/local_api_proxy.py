@@ -65,8 +65,12 @@ async def handle(request):
     path = request.raw_path.removeprefix("/h3") if h3_request else request.raw_path
     url = upstream + (path or "/")
     if request.headers.get("Upgrade", "").lower() == "websocket":
-        async with session.ws_connect(url, headers=headers, max_msg_size=0) as backend:
-            frontend = web.WebSocketResponse(max_msg_size=0)
+        websocket_headers = {
+            name: value for name, value in headers.items()
+            if not name.lower().startswith("sec-websocket-")
+        }
+        async with session.ws_connect(url, headers=websocket_headers, max_msg_size=0, heartbeat=20) as backend:
+            frontend = web.WebSocketResponse(max_msg_size=0, heartbeat=20)
             frontend.headers.update(cors)
             await frontend.prepare(request)
             tasks = [

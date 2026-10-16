@@ -554,6 +554,7 @@ export const useWorkflowTemplatesStore = defineStore(
     )
 
     async function fetchLogoIndex(): Promise<LogoIndex> {
+      if (import.meta.env.VITE_H3_ONLY === 'true') return {}
       try {
         const response = await fetchBackendFile(
           api.fileURL('/templates/index_logo.json')
