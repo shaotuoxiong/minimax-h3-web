@@ -1,4 +1,7 @@
 import unittest
+import gzip
+from pathlib import Path
+from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 from aiohttp import ClientSession, WSMsgType, web
@@ -8,6 +11,36 @@ import local_api_proxy
 
 
 class WebSocketProxyTest(unittest.IsolatedAsyncioTestCase):
+    async def test_frontend_serves_build_without_exposing_other_directories(self):
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            build = root / "frontend"
+            build.mkdir()
+            (build / "index.html").write_text("<html>H3 workbench</html>")
+            (build / "assets").mkdir()
+            (build / "assets" / "editor.js").write_text("export const h3 = true")
+            (build / "assets" / "editor.js.gz").write_bytes(
+                gzip.compress(b"export const h3 = true")
+            )
+            (root / "secret.txt").write_text("private")
+            (build / "outside.txt").symlink_to(root / "secret.txt")
+            frontend = web.Application()
+            local_api_proxy.add_frontend_routes(frontend, build)
+            async with TestServer(frontend) as server:
+                async with ClientSession() as session:
+                    async with session.get(server.make_url("/minimax-h3-web/")) as response:
+                        self.assertEqual(response.status, 200)
+                        self.assertEqual(response.headers["Cache-Control"], "no-cache")
+                        self.assertIn("H3 workbench", await response.text())
+                    async with session.get(server.make_url("/minimax-h3-web/assets/editor.js")) as response:
+                        self.assertEqual(response.status, 200)
+                        self.assertIn("javascript", response.headers["Content-Type"])
+                        self.assertEqual(response.headers["Content-Encoding"], "gzip")
+                        self.assertEqual(await response.text(), "export const h3 = true")
+                    for path in ["assets/", "outside.txt", "../secret.txt"]:
+                        async with session.get(server.make_url("/minimax-h3-web/" + path)) as response:
+                            self.assertIn(response.status, [403, 404])
+
     async def test_browser_compression_and_messages_survive_both_handshakes(self):
         async def upstream(request):
             self.assertNotIn("Sec-WebSocket-Extensions", request.headers)

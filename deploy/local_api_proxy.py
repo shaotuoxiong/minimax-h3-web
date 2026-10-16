@@ -1,5 +1,6 @@
 import asyncio
 import os
+from pathlib import Path
 
 from aiohttp import ClientError, ClientSession, ClientTimeout, WSMsgType, web
 
@@ -17,6 +18,19 @@ HOP_HEADERS = {
     "connection", "keep-alive", "proxy-authenticate", "proxy-authorization",
     "te", "trailer", "transfer-encoding", "upgrade",
 }
+
+
+def add_frontend_routes(app, directory):
+    async def index(request):
+        return web.FileResponse(
+            directory / "index.html", headers={"Cache-Control": "no-cache"}
+        )
+
+    app.router.add_get("/minimax-h3-web/", index)
+    app.router.add_get("/minimax-h3-web/index.html", index)
+    app.router.add_static(
+        "/minimax-h3-web/", directory, show_index=False, follow_symlinks=False
+    )
 
 
 async def session_context(app):
@@ -111,6 +125,9 @@ async def handle(request):
 
 app = web.Application(client_max_size=100 * 1024**2)
 app.cleanup_ctx.append(session_context)
+frontend_directory = Path(__file__).parent / "frontend"
+if (frontend_directory / "index.html").is_file():
+    add_frontend_routes(app, frontend_directory)
 app.router.add_route("*", "/{path:.*}", handle)
 if __name__ == "__main__":
     web.run_app(app, host="127.0.0.1", port=int(os.getenv("H3_PROXY_PORT", "8189")))

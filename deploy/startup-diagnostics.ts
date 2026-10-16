@@ -3,9 +3,19 @@
   const status = document.getElementById('startup-status')
   const details = document.getElementById('startup-details')
   const reload = document.getElementById('startup-reload')
+  const alternate = document.getElementById('startup-alternate')
   if (!panel || !status || !details || !reload) return
 
   let failed = false
+  if (alternate instanceof HTMLAnchorElement && panel.dataset.api) {
+    const address = new URL(panel.dataset.api)
+    if (address.origin !== location.origin) {
+      address.pathname = '/minimax-h3-web/'
+      address.search = ''
+      address.hash = location.hash
+      alternate.href = address.href
+    }
+  }
   function refreshPage() {
     const address = new URL(location.href)
     address.searchParams.set('h3-update', String(Date.now()))
@@ -37,6 +47,8 @@
     failed = true
     if (status) status.textContent = message
     if (reload) reload.hidden = false
+    if (alternate instanceof HTMLAnchorElement && alternate.href)
+      alternate.hidden = false
     const expansion = panel && panel.querySelector('details')
     if (expansion) expansion.open = true
     record(message)
@@ -85,12 +97,17 @@
   window.addEventListener('h3-startup-stage', stage)
   record('正在下载编辑器脚本；浏览器：' + navigator.userAgent)
 
+  const slowTimer = setTimeout(function () {
+    if (!failed) status.textContent = '网络较慢，仍在下载完整编辑器，请稍候…'
+    record('资源下载超过 30 秒，继续等待；固定域名入口可避免跨站下载')
+  }, 30000)
   const timer = setTimeout(function () {
     fail('完整编辑器加载超时，请查看下方脚本和 API 连接详情')
-  }, 30000)
+  }, 90000)
   const observer = new MutationObserver(function () {
     if (!document.getElementById('splash-loader')) {
       clearTimeout(timer)
+      clearTimeout(slowTimer)
       observer.disconnect()
       window.removeEventListener('error', scriptError, true)
       window.removeEventListener('unhandledrejection', rejected)

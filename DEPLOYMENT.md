@@ -1,6 +1,7 @@
 # H3 视频生成网页
 
-- 网站：https://shaotuoxiong.github.io/minimax-h3-web/
+- GitHub Pages：https://shaotuoxiong.github.io/minimax-h3-web/
+- 固定域名完整工作台：https://letdown-riverboat-flatware.ngrok-free.dev/minimax-h3-web/
 - 仓库：https://github.com/shaotuoxiong/minimax-h3-web
 - 生产 API：https://letdown-riverboat-flatware.ngrok-free.dev/h3
 - 发布前端：完整 ComfyUI Vue 节点编辑器，包含工作流画布、节点设置和生成队列。
@@ -25,6 +26,19 @@ GitHub Pages 只发布构建后的静态前端。Python、ngrok 凭据、输入�
 实际安卓微信兼容性仍需在用户设备验证。
 
 本机原版入口：http://127.0.0.1:8188/ ，原版前端版本为 1.55.17。Pages 保留同版本完整界面。H3 默认工作流已消除节点重叠，首次打开时自动适配画布，旧页面首次更新时会修正仍保持默认位置的节点并调整视角，保留提示词和参数；后续保留用户自己的视角。图生视频导入文件同样自动适配窗口。
+
+固定域名入口提供同一份构建后的完整工作台，页面和 API 使用同一域名，不依赖手机访问 GitHub Pages 下载编辑器脚本。分流器仅从 `deploy/frontend/` 提供静态构建，禁止目录列表及目录外符号链接。原聊天入口及 `/h3/` API 保留。ngrok 免费域名可能先显示访问确认页。
+
+更新此入口时，先完成构建与验证，再复制构建产物并重启分流器：
+
+```bash
+python3 deploy/publish_frontend.py
+systemctl --user restart h3-api-router.service
+```
+
+发布脚本为文本资源生成 gzip 副本，文件逐个原子替换，最后更新首页；首页要求重新校验缓存。30 秒仍在加载时提示网络较慢，90 秒仍未完成时显示诊断。
+
+`deploy/frontend/` 不提交 Git。保留之前的静态资源，避免已打开页面引用的旧脚本立即失效。
 
 ## 启动本地服务
 

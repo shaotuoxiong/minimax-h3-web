@@ -17,4 +17,5 @@ docker compose \
   -f /home/sim/models/ninfer-chat-web/compose.public.yml \
   -f "$project_dir/deploy/ngrok.override.yml" up -d --no-deps ngrok
 echo 'Frontend: https://shaotuoxiong.github.io/minimax-h3-web/'
+echo 'Same-origin workbench: https://letdown-riverboat-flatware.ngrok-free.dev/minimax-h3-web/'
 echo 'API: https://letdown-riverboat-flatware.ngrok-free.dev/h3'
