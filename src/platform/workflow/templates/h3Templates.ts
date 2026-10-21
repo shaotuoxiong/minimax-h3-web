@@ -30,6 +30,30 @@ export const h3Templates: WorkflowTemplates[] = [
         isEssential: true,
         models: ['MiniMax H3'],
         tags: ['Image to Video', 'INT8']
+      },
+      {
+        name: 'H3-R2V-lowvram',
+        title: 'H3 · 双图参考生视频',
+        description:
+          '两张参考图分别指定人物和场景。Ref2VA INT8，480p、约5秒，已在本机验证。',
+        mediaType: 'image',
+        mediaSubtype: 'svg',
+        openSource: true,
+        isEssential: true,
+        models: ['MiniMax H3'],
+        tags: ['Reference to Video', 'INT8']
+      },
+      {
+        name: 'H3-R2V-9refs-lowvram',
+        title: 'H3 · 多图参考（9张实测）',
+        description:
+          '9张参考图独立输入。4090 24GB、32GB RAM 实测；默认480p、约5秒，按图片编号描述用途。',
+        mediaType: 'image',
+        mediaSubtype: 'svg',
+        openSource: true,
+        isEssential: true,
+        models: ['MiniMax H3'],
+        tags: ['Reference to Video', 'INT8']
       }
     ]
   }

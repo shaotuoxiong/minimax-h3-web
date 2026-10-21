@@ -15,7 +15,7 @@ GitHub Pages 只发布构建后的静态前端。Python、ngrok 凭据、输入�
 
 ## 使用
 
-首页直接加载原版完整工作台中的 H3 文生视频工作流，桌面展开工作流列表。不自动弹出模板库。点击「模板」仅显示 H3 文生视频、图生视频两个已配置模板，封面和 JSON 随前端发布；不预加载其他模型模板、节点模板目录或全局子图。
+首页直接加载原版完整工作台中的 H3 文生视频工作流，桌面展开工作流列表。不自动弹出模板库。点击「模板」显示 H3 文生视频、图生视频、双图参考生视频和九图参考生视频四个已配置模板，封面和 JSON 随前端发布；不预加载其他模型模板、节点模板目录或全局子图。
 `?view=assets` 可直接打开素材库。素材库保留已生成/已导入分类、搜索与查看等原有功能。
 模板封面通过带隧道请求头的 fetch 下载并使用 Blob 预览，不依赖 Service Worker；远程媒体刷新错误 HTTP 缓存，并拒绝将 HTML 提示页作为图片缓存。
 素材库沿用原有已公开接口，未启用额外的 input/output/models 全目录索引。已有生成记录取决于后端现有历史，重启前的文件不会自动回填历史列表。
@@ -25,16 +25,53 @@ GitHub Pages 只发布构建后的静态前端。Python、ngrok 凭据、输入�
 若启动失败，底部显示错误和连接详情；可复制详情排查，而不再只显示加载标志。
 实际安卓微信兼容性仍需在用户设备验证。
 
+## 多图参考实测（2026-10-20）
+
+多图参考使用 `minimax_h3_ref2va_pruned_int8_convrot.safetensors`，与单图/文生视频的
+`fl2va` 权重分开。复用现有 Qwen3-VL 量化文本编码器和音视频 VAE。
+Ref2VA 文件已通过官方 SHA256 校验。测试使用九张不同的婚礼图片。
+
+固定条件：RTX 4090 24GB、32GB RAM，864×480、124 帧（约 5.2 秒）、24fps、
+20 步、`ref_image_size=match`、batch 1、单任务、VAE 分块解码。
+
+| 参考图片 | 成功次数                       | 耗时       |
+| -------- | ------------------------------ | ---------- |
+| 2 张     | 1                              | 98 秒      |
+| 4 张     | 1                              | 111 秒     |
+| 6 张     | 1                              | 125 秒     |
+| 9 张     | 3 个不同随机种子，含一次冷启动 | 151–153 秒 |
+
+调整内存策略后的六次生成均无新增 Swap 写入；全卡最高显存约 21.4 GiB，
+系统最高已用内存约 12.6 GiB。资源按一秒间隔采样，显存包含桌面等其他进程。
+这个结果不代表更高分辨率、更长视频、`max` 参考图尺寸或并发生成也能稳定运行。
+
+首次测试曾因 Swap 活动触发保护而中止。用户服务现设置 `MemoryHigh=20G`，
+优先触发服务内存回收，并用 `MemorySwapMax=0` 禁止 H3 匿名内存换出。
+CPU 卸载和 SSD 模型加载继续启用。服务配置更新后，在没有生成任务时执行：
+
+```bash
+install -Dm644 deploy/h3-comfyui.service ~/.config/systemd/user/h3-comfyui.service
+systemctl --user daemon-reload
+systemctl --user restart h3-comfyui.service
+```
+
+模板文件为 `public/workflows/H3-R2V-lowvram.json`（双图）和
+`public/workflows/H3-R2V-9refs-lowvram.json`（九图）。分别上传每张参考图，
+用 `<Picture 1>`、`<Picture 2>` 等在提示词中指定用途；更换素材后同步修改提示词。
+示例人物图为 Phil Warren 的 [Bride Portrait](https://commons.wikimedia.org/wiki/File:Bride_Portrait.jpg)，
+采用 [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/)，生成视频属于 AI 改编。
+
 本机原版入口：http://127.0.0.1:8188/ ，原版前端版本为 1.55.17。Pages 保留同版本完整界面。H3 默认工作流已消除节点重叠，首次打开时自动适配画布，旧页面首次更新时会修正仍保持默认位置的节点并调整视角，保留提示词和参数；后续保留用户自己的视角。图生视频导入文件同样自动适配窗口。
 
 固定域名入口提供同一份构建后的完整工作台，页面和 API 使用同一域名，不依赖手机访问 GitHub Pages 下载编辑器脚本。分流器仅从 `deploy/frontend/` 提供静态构建，禁止目录列表及目录外符号链接。原聊天入口及 `/h3/` API 保留。ngrok 免费域名可能先显示访问确认页。
 
-更新此入口时，先完成构建与验证，再复制构建产物并重启分流器：
+更新此入口时，先完成构建与验证，再复制构建产物。静态文件原子更新，首页最后替换，无需重启分流器：
 
 ```bash
 python3 deploy/publish_frontend.py
-systemctl --user restart h3-api-router.service
 ```
+
+修改分流器代码时才需要 `systemctl --user restart h3-api-router.service`。
 
 分流器对未压缩的 JSON 响应协商压缩，减少节点定义等必需接口的传输量；已压缩的响应不重复压缩。
 发布脚本为文本资源生成 gzip 副本，文件逐个原子替换，最后更新首页；首页要求重新校验缓存。30 秒仍在加载时提示网络较慢，90 秒仍未完成时显示诊断。

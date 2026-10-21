@@ -144,6 +144,8 @@ export default defineConfig([
       'components.d.ts',
       'coverage/*',
       'dist/*',
+      'deploy/frontend/**',
+      'temp/**',
       'apps/*/dist/**',
       'apps/*/.astro/**',
       'packages/registry-types/src/comfyRegistryTypes.ts',

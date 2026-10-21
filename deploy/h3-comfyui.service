@@ -8,6 +8,8 @@ WorkingDirectory=/home/sim/minimax-h3/ComfyUI
 ExecStart=/home/sim/minimax-h3/start.sh
 Restart=on-failure
 RestartSec=5
+MemoryHigh=20G
+MemorySwapMax=0
 
 [Install]
 WantedBy=default.target
