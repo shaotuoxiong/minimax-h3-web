@@ -23,6 +23,7 @@ class OutputVideosTest(unittest.TestCase):
             first = list_output_videos(output)
             self.assertEqual([asset["name"] for asset in first], ["婚礼.mp4"])
             self.assertEqual(first[0]["user_metadata"]["subfolder"], "video")
+            self.assertTrue(first[0]["created_at"].endswith("Z"))
             self.assertEqual(list_output_videos(Path(str(output))), first)
             second_folder = output / "other"
             second_folder.mkdir()

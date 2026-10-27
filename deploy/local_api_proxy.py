@@ -44,7 +44,7 @@ def list_output_videos(directory=OUTPUT_DIRECTORY):
             except FileNotFoundError:
                 continue
             relative = path.relative_to(root)
-            timestamp = datetime.fromtimestamp(stat.st_mtime, timezone.utc).isoformat()
+            timestamp = datetime.fromtimestamp(stat.st_mtime, timezone.utc).isoformat().replace("+00:00", "Z")
             assets.append({
                 "id": "disk-video-" + hashlib.sha256(relative.as_posix().encode()).hexdigest(),
                 "name": name,
