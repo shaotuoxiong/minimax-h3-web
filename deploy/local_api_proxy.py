@@ -12,6 +12,8 @@ UPSTREAM = "http://127.0.0.1:8188"
 ALLOWED_ORIGINS = {
     "https://shaotuoxiong.github.io",
     "https://letdown-riverboat-flatware.ngrok-free.dev",
+    "http://127.0.0.1:8189",
+    "http://localhost:8189",
     "http://127.0.0.1:4173",
     "http://localhost:4173",
     "http://127.0.0.1:5173",

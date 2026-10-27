@@ -108,20 +108,21 @@ class WebSocketProxyTest(unittest.IsolatedAsyncioTestCase):
             with patch.object(local_api_proxy, "UPSTREAM", str(backend_server.make_url(""))):
                 async with TestServer(proxy) as proxy_server:
                     async with ClientSession() as session:
-                        async with session.ws_connect(
-                            proxy_server.make_url("/h3/ws"),
-                            compress=15,
-                            origin="https://shaotuoxiong.github.io",
-                        ) as socket:
-                            self.assertEqual(await socket.receive_json(), {"type": "status"})
-                            flags = {"type": "feature_flags", "data": {}}
-                            await socket.send_json(flags)
-                            self.assertEqual(await socket.receive_json(), flags)
-                            await socket.send_bytes(b"preview")
-                            message = await socket.receive()
-                            self.assertEqual(message.type, WSMsgType.BINARY)
-                            self.assertEqual(message.data, b"preview")
-                            self.assertFalse(socket.closed)
+                        for origin in ["https://shaotuoxiong.github.io", "http://127.0.0.1:8189", "http://localhost:8189"]:
+                            async with session.ws_connect(
+                                proxy_server.make_url("/h3/ws"),
+                                compress=15,
+                                origin=origin,
+                            ) as socket:
+                                self.assertEqual(await socket.receive_json(), {"type": "status"})
+                                flags = {"type": "feature_flags", "data": {}}
+                                await socket.send_json(flags)
+                                self.assertEqual(await socket.receive_json(), flags)
+                                await socket.send_bytes(b"preview")
+                                message = await socket.receive()
+                                self.assertEqual(message.type, WSMsgType.BINARY)
+                                self.assertEqual(message.data, b"preview")
+                                self.assertFalse(socket.closed)
 
 
 if __name__ == "__main__":
