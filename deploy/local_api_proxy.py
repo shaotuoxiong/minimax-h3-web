@@ -1,6 +1,9 @@
 import asyncio
 import os
+import hashlib
+from datetime import datetime, timezone
 from pathlib import Path
+
 
 from aiohttp import ClientError, ClientSession, ClientTimeout, WSMsgType, web
 
@@ -18,6 +21,43 @@ HOP_HEADERS = {
     "connection", "keep-alive", "proxy-authenticate", "proxy-authorization",
     "te", "trailer", "transfer-encoding", "upgrade",
 }
+
+
+OUTPUT_DIRECTORY = Path(os.getenv(
+    "H3_OUTPUT_DIRECTORY", "/home/sim/minimax-h3/ComfyUI/output"
+))
+
+
+def list_output_videos(directory=OUTPUT_DIRECTORY):
+    assets = []
+    root = directory.resolve()
+    for parent, directories, filenames in os.walk(root, followlinks=False):
+        directories[:] = [name for name in directories if not (Path(parent) / name).is_symlink()]
+        for name in filenames:
+            path = Path(parent) / name
+            if path.suffix.lower() != ".mp4" or path.is_symlink():
+                continue
+            try:
+                stat = path.stat()
+                if not path.is_file() or stat.st_size == 0:
+                    continue
+            except FileNotFoundError:
+                continue
+            relative = path.relative_to(root)
+            timestamp = datetime.fromtimestamp(stat.st_mtime, timezone.utc).isoformat()
+            assets.append({
+                "id": "disk-video-" + hashlib.sha256(relative.as_posix().encode()).hexdigest(),
+                "name": name,
+                "size": stat.st_size,
+                "created_at": timestamp,
+                "updated_at": timestamp,
+                "tags": ["output"],
+                "user_metadata": {
+                    "jobId": "",
+                    "subfolder": relative.parent.as_posix() if relative.parent != Path(".") else "",
+                },
+            })
+    return sorted(assets, key=lambda asset: (asset["created_at"], asset["name"]), reverse=True)
 
 
 def add_frontend_routes(app, directory):
@@ -69,6 +109,11 @@ async def handle(request):
         }
     if request.method == "OPTIONS":
         return web.Response(status=204, headers=cors)
+    if request.path == "/h3/api/h3/output-videos":
+        if request.method != "GET":
+            return web.Response(status=405, headers=cors)
+        assets = await asyncio.to_thread(list_output_videos)
+        return web.json_response(assets, headers={**cors, "Cache-Control": "no-store"})
     headers = {
         name: value for name, value in request.headers.items()
         if name.lower() not in HOP_HEADERS | {"host", "origin", "sec-fetch-site"}

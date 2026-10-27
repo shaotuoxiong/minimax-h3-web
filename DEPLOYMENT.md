@@ -119,3 +119,11 @@ PAGES_BASE_PATH=/minimax-h3-web/ pnpm preview --host 127.0.0.1 --port 4173
 `pnpm build:mobile` 保留旧轻量页面的独立构建方式，不用于当前 Pages 首页。
 
 上游 ComfyUI_frontend 源码和 GPL-3.0 许可保留在仓库中。
+
+### 重启后保留生成视频列表
+
+H3 的「媒体资产 → 已生成」会合并实时任务历史与输出目录中的 MP4，按完整相对路径去重。历史清空或后端重启不会让磁盘中的视频从素材库消失。重新打开素材库或刷新列表时会扫描新文件；扫描只读取文件信息，不加载视频内容或模型。
+
+本地代理提供只读 `GET /h3/api/h3/output-videos`，默认扫描 `/home/sim/minimax-h3/ComfyUI/output`，可用代理环境变量 `H3_OUTPUT_DIRECTORY` 配置。跳过空文件、符号链接及其他文件类型，继续使用现有 ComfyUI `/view` 播放和下载。此列表恢复视频文件，不伪造已经丢失的任务历史；仍存有历史的作品保留原任务信息。
+
+代理实现位于 `deploy/local_api_proxy.py`。更新 Python 代码后，在没有生成任务时重启 `h3-api-router.service`；不需要重启模型服务。验证命令：`python -m unittest discover -s deploy -p 'test_*videos.py'` 和 `python -m unittest discover -s deploy -p 'test_*proxy.py'`。

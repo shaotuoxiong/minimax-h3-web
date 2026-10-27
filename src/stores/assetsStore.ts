@@ -13,6 +13,11 @@ import {
 } from 'vue'
 import type { EffectScope } from 'vue'
 
+import {
+  fetchH3OutputVideos,
+  mergeH3OutputVideos
+} from '@/platform/assets/services/h3OutputVideos'
+import { reportError } from '@/platform/telemetry/reportError'
 import { useFeatureFlags } from '@/composables/useFeatureFlags'
 import {
   mapInputFileToAssetItem,
@@ -147,6 +152,7 @@ export const useAssetsStore = defineStore('assets', () => {
 
   function useHistoryAssets(): PagedList<AssetItem> {
     // Pagination state
+    const savedVideos = ref<AssetItem[]>([])
     const historyOffset = ref(0)
     const hasMoreHistory = ref(true)
     const isLoadingMore = ref(false)
@@ -233,6 +239,14 @@ export const useAssetsStore = defineStore('assets', () => {
       historyLoading.value = true
       historyError.value = null
       try {
+        if (import.meta.env.VITE_H3_ONLY === 'true') {
+          try {
+            const saved = await fetchH3OutputVideos()
+            if (saved) savedVideos.value = saved
+          } catch (error) {
+            reportError(error, { errorType: 'error_loading_saved_h3_videos' })
+          }
+        }
         await fetchHistoryAssets(false)
         historyAssets.value = allHistoryItems.value
       } catch (err) {
@@ -276,7 +290,9 @@ export const useAssetsStore = defineStore('assets', () => {
       hasMore: hasMoreHistory,
       invalidate: updateHistory,
       isLoading: computed(() => historyLoading.value || isLoadingMore.value),
-      items: historyAssets,
+      items: computed(() =>
+        mergeH3OutputVideos(historyAssets.value, savedVideos.value)
+      ),
       loadMore: loadMoreHistory,
       loadNew: updateHistory
     }

@@ -11,6 +11,26 @@ import local_api_proxy
 
 
 class WebSocketProxyTest(unittest.IsolatedAsyncioTestCase):
+    async def test_saved_videos_endpoint_respects_origins_and_refreshes_from_disk(self):
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "old.mp4").write_bytes(b"video")
+            from local_api_proxy import list_output_videos
+            with patch.object(local_api_proxy, "list_output_videos", lambda: list_output_videos(root)):
+                for expected in [1, 2]:
+                    proxy = web.Application()
+                    proxy.router.add_route("*", "/{path:.*}", local_api_proxy.handle)
+                    async with TestServer(proxy) as server:
+                        async with ClientSession() as session:
+                            async with session.get(server.make_url("/h3/api/h3/output-videos"), headers={"Origin": "https://shaotuoxiong.github.io"}) as response:
+                                self.assertEqual(response.status, 200)
+                                self.assertEqual(response.headers["Cache-Control"], "no-store")
+                                self.assertEqual(response.headers["Access-Control-Allow-Origin"], "https://shaotuoxiong.github.io")
+                                self.assertEqual(len(await response.json()), expected)
+                            async with session.get(server.make_url("/h3/api/h3/output-videos"), headers={"Origin": "https://untrusted.example"}) as response:
+                                self.assertEqual(response.status, 403)
+                    (root / "new.mp4").write_bytes(b"new video")
+
     async def test_node_definitions_are_compressed_without_changing_json(self):
         data = {"nodes": [{"name": "H3", "description": "video"}] * 5000}
 

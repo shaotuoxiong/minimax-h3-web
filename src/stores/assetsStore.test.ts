@@ -1284,3 +1284,34 @@ describe('assetsStore - Deletion State and Input Mapping', () => {
     })
   })
 })
+
+describe('saved H3 output library', () => {
+  it('shows saved videos after task history is lost and refreshes newly saved files', async () => {
+    vi.stubEnv('VITE_H3_ONLY', 'true')
+    const { api } = await import('@/scripts/api')
+    vi.mocked(api.getHistory).mockResolvedValue([])
+    const saved = (id: string) => ({
+      id,
+      name: `${id}.mp4`,
+      tags: ['output'],
+      created_at: '2026-10-27T00:00:00Z',
+      updated_at: '2026-10-27T00:00:00Z',
+      user_metadata: { jobId: '', subfolder: 'video' }
+    })
+    const fetch = vi
+      .fn()
+      .mockResolvedValueOnce(Response.json([saved('old')]))
+      .mockResolvedValueOnce(Response.json([saved('old'), saved('new')]))
+    vi.stubGlobal('fetch', fetch)
+    const store = useAssetsStore()
+    await store.outputAssets.invalidate()
+    expect(store.outputAssets.items.map((item) => item.name)).toEqual([
+      'old.mp4'
+    ])
+    await store.outputAssets.loadNew()
+    expect(store.outputAssets.items.map((item) => item.name)).toEqual([
+      'old.mp4',
+      'new.mp4'
+    ])
+  })
+})
