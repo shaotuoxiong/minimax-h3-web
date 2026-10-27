@@ -1,3 +1,4 @@
+import { getH3BackendUrl } from '@/utils/h3BackendUrl'
 import { h3Templates } from '@/platform/workflow/templates/h3Templates'
 import type {
   GetEmbeddingsResponse,
@@ -449,9 +450,7 @@ export class ComfyApi extends EventTarget {
   >()
   api_host: string
   api_base: string
-  private readonly backendUrl = import.meta.env.VITE_API_BASE_URL
-    ? new URL(import.meta.env.VITE_API_BASE_URL)
-    : undefined
+  private readonly backendUrl = getH3BackendUrl()
   /**
    * The client id from the initial session storage.
    */

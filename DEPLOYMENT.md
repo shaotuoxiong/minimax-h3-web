@@ -127,3 +127,5 @@ H3 的「媒体资产 → 已生成」会合并实时任务历史与输出目录
 本地代理提供只读 `GET /h3/api/h3/output-videos`，默认扫描 `/home/sim/minimax-h3/ComfyUI/output`，可用代理环境变量 `H3_OUTPUT_DIRECTORY` 配置。跳过空文件、符号链接及其他文件类型，继续使用现有 ComfyUI `/view` 播放和下载。此列表恢复视频文件，不伪造已经丢失的任务历史；仍存有历史的作品保留原任务信息。
 
 代理实现位于 `deploy/local_api_proxy.py`。更新 Python 代码后，在没有生成任务时重启 `h3-api-router.service`；不需要重启模型服务。验证命令：`python -m unittest discover -s deploy -p 'test_*videos.py'` 和 `python -m unittest discover -s deploy -p 'test_*proxy.py'`。
+
+本机入口：`http://127.0.0.1:8189/minimax-h3-web/?view=assets`。在代理的本机端口打开时，前端直接使用同源 `/h3` API，不依赖 ngrok 或公网；GitHub Pages 继续使用配置的公网 API。

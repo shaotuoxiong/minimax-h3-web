@@ -1,10 +1,11 @@
+import { getH3BackendUrl } from '@/utils/h3BackendUrl'
 window.dispatchEvent(
   new CustomEvent('h3-startup-stage', {
     detail: '入口脚本已运行，正在准备媒体连接'
   })
 )
 
-const backendAddress = import.meta.env.VITE_API_BASE_URL
+const backendAddress = getH3BackendUrl()?.href
 if (
   backendAddress &&
   new URL(backendAddress).hostname.endsWith('.ngrok-free.dev')

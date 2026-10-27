@@ -1,8 +1,9 @@
+import { getH3BackendUrl } from './h3BackendUrl'
+
 export function fetchBackendFile(url: string, options: RequestInit = {}) {
   const headers = new Headers(options.headers)
-  const configured = import.meta.env.VITE_API_BASE_URL
-  if (configured) {
-    const backend = new URL(configured)
+  const backend = getH3BackendUrl()
+  if (backend) {
     const target = new URL(url, location.href)
     const prefix = backend.pathname.replace(/\/$/, '')
     if (
