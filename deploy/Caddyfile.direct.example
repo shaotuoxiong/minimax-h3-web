@@ -1,0 +1,28 @@
+{
+	admin 127.0.0.1:2020
+	auto_https off
+	servers {
+		protocols h1 h2
+	}
+}
+
+https://{$H3_PUBLIC_HOST}:8443 {
+	tls {$H3_TLS_CERT} {$H3_TLS_KEY}
+	encode zstd gzip
+
+	handle /h3/* {
+		reverse_proxy 127.0.0.1:8189
+	}
+
+	handle /minimax-h3-web/* {
+		reverse_proxy 127.0.0.1:8189
+	}
+
+	handle / {
+		redir * /minimax-h3-web/ 302
+	}
+
+	handle {
+		respond "Not found" 404
+	}
+}

@@ -1,0 +1,10 @@
+[Unit]
+Description=Keep H3 direct HTTPS router mapping renewed
+
+[Timer]
+OnBootSec=30
+OnUnitActiveSec=120
+Unit=h3-direct-mapping.service
+
+[Install]
+WantedBy=timers.target

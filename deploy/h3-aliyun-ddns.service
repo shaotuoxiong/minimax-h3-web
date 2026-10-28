@@ -1,0 +1,10 @@
+[Unit]
+Description=Update H3 hostname from router WAN IPv4
+After=network-online.target
+
+[Service]
+Type=oneshot
+Environment=H3_DNS_DOMAIN=yakiyyy.online
+Environment=H3_DNS_RR=h3
+EnvironmentFile=/home/sim/projects/minimax-h3-web/temp/direct-public/aliyun-dns.env
+ExecStart=/home/sim/projects/minimax-h3-tools/alidns-venv/bin/python -E -s /home/sim/projects/minimax-h3-web/deploy/aliyun_ddns.py --apply

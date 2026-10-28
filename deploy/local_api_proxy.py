@@ -11,6 +11,7 @@ from aiohttp import ClientError, ClientSession, ClientTimeout, WSMsgType, web
 UPSTREAM = "http://127.0.0.1:8188"
 ALLOWED_ORIGINS = {
     "https://shaotuoxiong.github.io",
+    "https://h3.yakiyyy.online:47863",
     "https://letdown-riverboat-flatware.ngrok-free.dev",
     "http://127.0.0.1:8189",
     "http://localhost:8189",

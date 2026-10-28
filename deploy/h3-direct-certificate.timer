@@ -1,0 +1,11 @@
+[Unit]
+Description=Check H3 HTTPS certificate renewal daily
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+RandomizedDelaySec=1800
+Unit=h3-direct-certificate.service
+
+[Install]
+WantedBy=timers.target

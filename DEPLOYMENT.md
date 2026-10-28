@@ -1,24 +1,24 @@
 # H3 视频生成网页
 
 - GitHub Pages：https://shaotuoxiong.github.io/minimax-h3-web/
-- 固定域名完整工作台：https://letdown-riverboat-flatware.ngrok-free.dev/minimax-h3-web/
+- 固定域名完整工作台：https://h3.yakiyyy.online:47863/minimax-h3-web/
 - 仓库：https://github.com/shaotuoxiong/minimax-h3-web
-- 生产 API：https://letdown-riverboat-flatware.ngrok-free.dev/h3
+- 生产 API：https://h3.yakiyyy.online:47863/h3
 - 发布前端：完整 ComfyUI Vue 节点编辑器，包含工作流画布、节点设置和生成队列。
 - 启动诊断在模块脚本之前运行，显示资源加载、脚本错误、API 状态和超时信息。
 - 媒体连接使用可选 Service Worker，在后台初始化，不阻塞工作台启动；API 请求可直接连接。
 - 本机模型后端仍为 ComfyUI，监听 `127.0.0.1:8188`。
 - 分流器监听 `127.0.0.1:8189`，`/h3/` 转发 ComfyUI，其余路径保留原聊天网关 `127.0.0.1:8081`。
 
-GitHub Pages 只发布构建后的静态前端。Python、ngrok 凭据、输入照片和视频及模型权重留在 Ubuntu。
-前端环境变量是公开配置，不能存放密钥。现有 ngrok 固定域名继续使用，无需申请新域名。
+GitHub Pages 只发布构建后的静态前端。Python、DNS 凭据、输入照片和视频及模型权重留在 Ubuntu。
+前端环境变量是公开配置，不能存放密钥。生产 API 已切换到自有域名直连。
 
 ## 使用
 
 首页直接加载原版完整工作台中的 H3 文生视频工作流，桌面展开工作流列表。不自动弹出模板库。点击「模板」显示 H3 文生视频、图生视频、双图参考生视频和九图参考生视频四个已配置模板，封面和 JSON 随前端发布；不预加载其他模型模板、节点模板目录或全局子图。
 `?view=assets` 可直接打开素材库。素材库保留已生成/已导入分类、搜索与查看等原有功能。
 模板封面通过带隧道请求头的 fetch 下载并使用 Blob 预览，不依赖 Service Worker；远程媒体刷新错误 HTTP 缓存，并拒绝将 HTML 提示页作为图片缓存。
-素材库沿用原有已公开接口，未启用额外的 input/output/models 全目录索引。已有生成记录取决于后端现有历史，重启前的文件不会自动回填历史列表。
+素材库通过只读输出视频列表补充历史记录，重启后仍显示磁盘中的 MP4；未启用 input/output/models 全目录索引。
 图生视频工作流可从 ComfyUI 工作流列表打开，或导入 `public/workflows/H3-I2V-lowvram.json`。
 保留低显存模型、CPU offload 和 batch 1。完整编辑器通过 HTTPS API 和 WebSocket 连接本机后端。
 部署更新后若缓存页面引用已删除的动态脚本，启动诊断会带新查询参数自动刷新一次；一分钟内不重复重试，避免刷新循环。手动重试按钮同样绕过旧首页缓存。
@@ -63,7 +63,7 @@ systemctl --user restart h3-comfyui.service
 
 本机原版入口：http://127.0.0.1:8188/ ，原版前端版本为 1.55.17。Pages 保留同版本完整界面。H3 默认工作流已消除节点重叠，首次打开时自动适配画布，旧页面首次更新时会修正仍保持默认位置的节点并调整视角，保留提示词和参数；后续保留用户自己的视角。图生视频导入文件同样自动适配窗口。
 
-固定域名入口提供同一份构建后的完整工作台，页面和 API 使用同一域名，不依赖手机访问 GitHub Pages 下载编辑器脚本。分流器仅从 `deploy/frontend/` 提供静态构建，禁止目录列表及目录外符号链接。原聊天入口及 `/h3/` API 保留。ngrok 免费域名可能先显示访问确认页。
+域名入口提供同一份构建后的完整工作台，页面和 API 使用同一域名，不依赖 GitHub Pages 下载编辑器脚本。分流器仅从 `deploy/frontend/` 提供静态构建，禁止目录列表及目录外符号链接。新 HTTPS 入口只公开 H3 和工作台；原聊天配置保留。
 
 更新此入口时，先完成构建与验证，再复制构建产物。静态文件原子更新，首页最后替换，无需重启分流器：
 
@@ -86,7 +86,7 @@ bash /home/sim/projects/minimax-h3-web/deploy/start-public.sh
 
 启动脚本会安装并启动用户级 `h3-comfyui.service`，让原 ComfyUI 启动命令在后台持续运行。日志仍保存在原 logs 目录。
 分流器分别处理两端的 WebSocket 握手，避免转发浏览器压缩协商参数导致连接立即关闭；两端每 20 秒发送心跳。前端沿用原版自动重连机制，重连不重新提交生成任务。
-电脑、网络、ComfyUI、分流器和 ngrok 需要保持在线。电脑离线时网页仍会显示，但不能生成视频。
+电脑、路由器、ComfyUI、分流器和 HTTPS 服务需要保持在线。GitHub Pages 前端独立托管，电脑离线时不能生成或访问本机视频。
 
 ```bash
 systemctl --user status h3-comfyui.service h3-api-router.service
@@ -129,3 +129,51 @@ H3 的「媒体资产 → 已生成」会合并实时任务历史与输出目录
 代理实现位于 `deploy/local_api_proxy.py`。更新 Python 代码后，在没有生成任务时重启 `h3-api-router.service`；不需要重启模型服务。验证命令：`python -m unittest discover -s deploy -p 'test_*videos.py'` 和 `python -m unittest discover -s deploy -p 'test_*proxy.py'`。
 
 本机入口：`http://127.0.0.1:8189/minimax-h3-web/?view=assets`。在代理的本机端口打开时，前端直接使用同源 `/h3` API，不依赖 ngrok 或公网；GitHub Pages 继续使用配置的公网 API。
+
+### 域名 HTTPS 直连
+
+完整工作台：`https://h3.yakiyyy.online:47863/minimax-h3-web/`。
+生产 API：`https://h3.yakiyyy.online:47863/h3`。
+GitHub Pages 保留 `https://shaotuoxiong.github.io/minimax-h3-web/`，连接相同生产 API。
+
+宽带拥有公网 IPv4，标准 TCP 80/443 的外部对照测试超时，高端口可用。
+因此地址中的 `:47863` 必须保留。路由器将 TCP 47863 转发到本机 8443，
+Caddy 再转发到 127.0.0.1:8189。新入口只开放 `/h3/*`、
+`/minimax-h3-web/*` 和根路径跳转，其他路径返回 404。
+
+2026-10-28 域名 clientHold 已解除，公共 DNS 返回正确 A 记录。
+通过阿里云 DNS TXT 验证签发 Let's Encrypt 证书，SAN 为 `h3.yakiyyy.online`，
+本次证书有效期至 2027-01-26。两个外部探测节点访问 HTTPS 系统 API 均返回 200。
+
+用户服务已启用，用户 lingering 已开启：
+
+- `h3-direct-https.service`：Caddy 2.11.7，独立用户服务，失败自动重启。
+- `h3-direct-mapping.timer`：每 120 秒续租 600 秒端口映射，拒绝覆盖其他应用映射。
+- `h3-aliyun-ddns.timer`：每 180 秒读取路由器真实 WAN IPv4，仅变化时更新 `h3` A 记录，TTL 600 秒。
+- `h3-direct-certificate.timer`：每日检查证书续期，完成后重新加载 HTTPS 服务。
+
+```bash
+systemctl --user status h3-comfyui.service h3-api-router.service h3-direct-https.service
+systemctl --user list-timers 'h3-*'
+journalctl --user -u h3-direct-https.service -u h3-aliyun-ddns.service -n 50
+```
+
+`deploy/direct_gateway.py` 默认只读查询，`--apply` 才建立映射；使用有限租约，
+路由器重启后定时器会重新建立映射。公网 IP 变化后可能需要等待检测及 DNS 缓存过期。
+没有启用 IPv6 AAAA，避免发布未经验证的入站地址。
+
+`aliyun_ddns.py` 使用独立虚拟环境中的官方 SDK，版本固定在
+`deploy/direct-requirements.txt`。Caddy 和 acme.sh 分别保存在独立工具目录，
+不修改模型 Python 环境。`direct_certificate.sh` 使用固定版本官方 acme.sh 3.1.6，
+通过 `dns_ali` 验证，指定 Let's Encrypt。
+
+RAM 策略见 `deploy/aliyun-dns-policy.json`：全局读取 DNS 记录，写操作限定
+`yakiyyy.online`。该授权粒度是整个域名。凭据保存在本机
+`temp/direct-public/aliyun-dns.env` 的 `Ali_Key` / `Ali_Secret`；
+文件权限 600、父目录 700，凭据、证书私钥和 ACME 状态不进入 Git 或前端。
+非敏感模板为 `deploy/*.env.example`。
+
+网页构建使用 `.env.production` 中的公开 API 地址；修改并验证后提交到 main，
+GitHub Actions 构建和发布 Pages。本机直连入口构建后执行
+`python3 deploy/publish_frontend.py` 原子更新，无需重启模型或代理。
+电脑和路由器需要持续开机；国内各网络及安卓微信的可达性仍以实际设备验证为准。

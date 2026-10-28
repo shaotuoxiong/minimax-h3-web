@@ -1,0 +1,8 @@
+[Unit]
+Description=Renew H3 direct HTTPS router mapping
+After=h3-direct-https.service
+Requisite=h3-direct-https.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 -I /home/sim/projects/minimax-h3-web/deploy/direct_gateway.py --apply --external-port 47863 --internal-port 8443

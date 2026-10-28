@@ -108,7 +108,7 @@ class WebSocketProxyTest(unittest.IsolatedAsyncioTestCase):
             with patch.object(local_api_proxy, "UPSTREAM", str(backend_server.make_url(""))):
                 async with TestServer(proxy) as proxy_server:
                     async with ClientSession() as session:
-                        for origin in ["https://shaotuoxiong.github.io", "http://127.0.0.1:8189", "http://localhost:8189"]:
+                        for origin in ["https://shaotuoxiong.github.io", "http://127.0.0.1:8189", "http://localhost:8189", "https://h3.yakiyyy.online:47863"]:
                             async with session.ws_connect(
                                 proxy_server.make_url("/h3/ws"),
                                 compress=15,

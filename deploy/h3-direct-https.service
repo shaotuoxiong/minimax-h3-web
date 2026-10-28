@@ -1,0 +1,14 @@
+[Unit]
+Description=MiniMax H3 direct HTTPS frontend and API
+After=network-online.target h3-api-router.service
+Requires=h3-api-router.service
+
+[Service]
+EnvironmentFile=/home/sim/projects/minimax-h3-web/temp/direct-public/https.env
+ExecStart=/home/sim/projects/minimax-h3-tools/caddy-2.11.7/caddy run --config /home/sim/projects/minimax-h3-web/deploy/Caddyfile.direct.example --adapter caddyfile
+ExecReload=/home/sim/projects/minimax-h3-tools/caddy-2.11.7/caddy reload --config /home/sim/projects/minimax-h3-web/deploy/Caddyfile.direct.example --adapter caddyfile
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

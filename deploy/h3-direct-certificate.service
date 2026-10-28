@@ -1,0 +1,9 @@
+[Unit]
+Description=Renew trusted HTTPS certificate for h3.yakiyyy.online
+After=network-online.target
+
+[Service]
+Type=oneshot
+Environment=H3_PUBLIC_HOST=h3.yakiyyy.online
+EnvironmentFile=/home/sim/projects/minimax-h3-web/temp/direct-public/aliyun-dns.env
+ExecStart=/bin/bash /home/sim/projects/minimax-h3-web/deploy/direct_certificate.sh renew

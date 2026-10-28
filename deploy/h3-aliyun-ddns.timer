@@ -1,0 +1,10 @@
+[Unit]
+Description=Check H3 public IP for DNS updates
+
+[Timer]
+OnBootSec=45
+OnUnitActiveSec=180
+Unit=h3-aliyun-ddns.service
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,19 @@
+{
+  "Version": "1",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": ["alidns:DescribeDomainRecords"],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "alidns:AddDomainRecord",
+        "alidns:UpdateDomainRecord",
+        "alidns:DeleteDomainRecord"
+      ],
+      "Resource": "acs:alidns:*:*:domain/yakiyyy.online"
+    }
+  ]
+}
